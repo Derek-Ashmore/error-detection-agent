@@ -28,7 +28,7 @@ hive-mind-prompt-*.txt
 
 # Node.js Dependencies
 node_modules/
-package-lock.json
+# package-lock.json - Committed for CI/CD cache consistency
 yarn.lock
 pnpm-lock.yaml
 
