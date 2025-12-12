@@ -94,3 +94,11 @@ npx claude-flow@alpha swarm "Please fix the test failures in file instructions/e
 
 - Please fix the test failures in file instructions/error-test-failure-2025-12-12-16-07.txt
 - Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the test coverage issue in file instructions/error-test-failure-2025-12-12-16-24.txt. Is the 90% coverage threshold specified reasonable?  I usually us 80%. Please let me know if you need additional information." --claude
+```
+
+- Please fix the test coverage issue in file instructions/error-test-failure-2025-12-12-16-24.txt.
+- Is the 90% coverage threshold specified reasonable?  I usually us 80%.
+- Please let me know if you need additional information.
