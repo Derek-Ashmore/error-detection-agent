@@ -300,6 +300,156 @@ logging:
     });
   });
 
+  describe('Error Handling', () => {
+    it('should handle YAML parsing errors', () => {
+      const malformedYamlPath = path.join(testConfigDir, 'malformed.yaml');
+      fs.writeFileSync(malformedYamlPath, 'invalid: yaml: content: [unclosed');
+
+      expect(() => {
+        loadConfig({ configPath: malformedYamlPath });
+      }).toThrow(ConfigurationError);
+    });
+
+    it('should handle non-object YAML content', () => {
+      const nonObjectYamlPath = path.join(testConfigDir, 'non-object.yaml');
+      fs.writeFileSync(nonObjectYamlPath, 'just a string');
+
+      expect(() => {
+        loadConfig({ configPath: nonObjectYamlPath });
+      }).toThrow(ConfigurationError);
+    });
+
+    it('should fall back to default paths when config path is empty', () => {
+      // Create a default config file so it can be found
+      const defaultConfigPath = path.resolve('config/default.yaml');
+      const defaultDir = path.dirname(defaultConfigPath);
+
+      if (!fs.existsSync(defaultDir)) {
+        fs.mkdirSync(defaultDir, { recursive: true });
+      }
+
+      fs.writeFileSync(defaultConfigPath, fs.readFileSync(validConfigPath));
+
+      try {
+        const config = loadConfig({ configPath: '' });
+        expect(config).toBeDefined();
+      } finally {
+        // Cleanup
+        if (fs.existsSync(defaultConfigPath)) {
+          fs.unlinkSync(defaultConfigPath);
+        }
+        if (fs.existsSync(defaultDir)) {
+          fs.rmdirSync(defaultDir);
+        }
+      }
+    });
+
+    it('should handle nested environment variable with empty key', () => {
+      process.env['ENVIRONMENT'] = 'production';
+
+      const config = loadConfig({
+        configPath: validConfigPath,
+        allowEnvOverrides: true,
+      });
+
+      expect(config.environment).toBe('production');
+    });
+
+    it('should handle environment override with empty value', () => {
+      process.env['AZURE_WORKSPACE_ID'] = '';
+
+      const config = loadConfig({
+        configPath: validConfigPath,
+        allowEnvOverrides: true,
+      });
+
+      expect(config.azureMonitor.workspaceId).toBe('test-workspace-id');
+    });
+
+    it('should handle failed environment config load gracefully', () => {
+      const configSubDir = path.join(testConfigDir, 'config');
+      if (!fs.existsSync(configSubDir)) {
+        fs.mkdirSync(configSubDir, { recursive: true });
+      }
+
+      const malformedEnvConfig = path.join(configSubDir, 'staging.yaml');
+      fs.writeFileSync(malformedEnvConfig, 'invalid: [yaml');
+
+      // Suppress console.warn output during test
+      const originalWarn = console.warn;
+      const warnMock = jest.fn();
+      console.warn = warnMock;
+
+      const config = loadConfig({
+        configPath: validConfigPath,
+        environment: 'staging',
+      });
+
+      // Restore console.warn
+      console.warn = originalWarn;
+
+      // Should still have base config values since override failed
+      expect(config.azureMonitor.workspaceId).toBe('test-workspace-id');
+      expect(warnMock).toHaveBeenCalled();
+    });
+
+    it('should handle undefined environment in loadEnvironmentOverrides', () => {
+      const config = loadConfig({
+        configPath: validConfigPath,
+        environment: undefined,
+      });
+
+      expect(config).toBeDefined();
+    });
+
+    it('should handle empty environment string', () => {
+      const config = loadConfig({
+        configPath: validConfigPath,
+        environment: '',
+      });
+
+      expect(config).toBeDefined();
+    });
+  });
+
+  describe('loadConfigWithSchema', () => {
+    it('should load config with custom schema', () => {
+      const { loadConfigWithSchema } = require('../../src/config/loader');
+      const { appConfigSchema } = require('../../src/config/schemas');
+
+      const config = loadConfigWithSchema(appConfigSchema, { configPath: validConfigPath });
+
+      expect(config).toBeDefined();
+      expect(config.azureMonitor.workspaceId).toBe('test-workspace-id');
+    });
+
+    it('should handle ZodError in loadConfigWithSchema', () => {
+      const { loadConfigWithSchema } = require('../../src/config/loader');
+      const { z } = require('zod');
+
+      const strictSchema = z.object({
+        requiredField: z.string(),
+      });
+
+      expect(() => {
+        loadConfigWithSchema(strictSchema, { configPath: validConfigPath });
+      }).toThrow(ConfigurationError);
+    });
+
+    it('should handle generic errors in loadConfigWithSchema', () => {
+      const { loadConfigWithSchema } = require('../../src/config/loader');
+      const { z } = require('zod');
+
+      const badSchema = z.object({}).transform(() => {
+        throw new Error('Transform error');
+      });
+
+      expect(() => {
+        loadConfigWithSchema(badSchema, { configPath: validConfigPath });
+      }).toThrow(ConfigurationError);
+    });
+  });
+
   describe('Configuration Schema Validation', () => {
     it('should validate Azure Monitor configuration', () => {
       const config = loadConfig({ configPath: validConfigPath });
