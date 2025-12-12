@@ -1,0 +1,18 @@
+/home/runner/work/error-detection-agent/error-detection-agent/tests/config/loader.test.ts
+Error:   417:40  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   418:35  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   420:22  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   427:40  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   428:21  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   430:28  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   431:24  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   435:9   error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   440:40  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   441:21  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   443:25  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   443:25  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+Error:   448:9   error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+
+✖ 13 problems (13 errors, 0 warnings)
+
+Error: Process completed with exit code 1.
