@@ -10,6 +10,7 @@ export const VERSION = '0.1.0';
  * Main function - entry point for the application
  */
 export function main(): void {
+  // eslint-disable-next-line no-console
   console.log(`${APP_NAME} v${VERSION} initialized`);
 }
 

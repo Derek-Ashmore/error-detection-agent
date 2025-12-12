@@ -38,7 +38,7 @@ describe('Example Test Suite', () => {
 
   describe('Error Handling', () => {
     it('should catch errors', () => {
-      const throwError = () => {
+      const throwError = (): never => {
         throw new Error('Test error');
       };
 
@@ -46,8 +46,8 @@ describe('Example Test Suite', () => {
     });
 
     it('should handle async errors', async () => {
-      const asyncError = async () => {
-        throw new Error('Async error');
+      const asyncError = (): Promise<never> => {
+        return Promise.reject(new Error('Async error'));
       };
 
       await expect(asyncError()).rejects.toThrow('Async error');
