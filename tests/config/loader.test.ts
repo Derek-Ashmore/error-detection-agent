@@ -413,9 +413,9 @@ logging:
   });
 
   describe('loadConfigWithSchema', () => {
-    it('should load config with custom schema', () => {
-      const { loadConfigWithSchema } = require('../../src/config/loader');
-      const { appConfigSchema } = require('../../src/config/schemas');
+    it('should load config with custom schema', async () => {
+      const { loadConfigWithSchema } = await import('../../src/config/loader');
+      const { appConfigSchema } = await import('../../src/config/schemas');
 
       const config = loadConfigWithSchema(appConfigSchema, { configPath: validConfigPath });
 
@@ -423,9 +423,9 @@ logging:
       expect(config.azureMonitor.workspaceId).toBe('test-workspace-id');
     });
 
-    it('should handle ZodError in loadConfigWithSchema', () => {
-      const { loadConfigWithSchema } = require('../../src/config/loader');
-      const { z } = require('zod');
+    it('should handle ZodError in loadConfigWithSchema', async () => {
+      const { loadConfigWithSchema } = await import('../../src/config/loader');
+      const { z } = await import('zod');
 
       const strictSchema = z.object({
         requiredField: z.string(),
@@ -436,9 +436,9 @@ logging:
       }).toThrow(ConfigurationError);
     });
 
-    it('should handle generic errors in loadConfigWithSchema', () => {
-      const { loadConfigWithSchema } = require('../../src/config/loader');
-      const { z } = require('zod');
+    it('should handle generic errors in loadConfigWithSchema', async () => {
+      const { loadConfigWithSchema } = await import('../../src/config/loader');
+      const { z } = await import('zod');
 
       const badSchema = z.object({}).transform(() => {
         throw new Error('Transform error');
