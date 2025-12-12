@@ -1,0 +1,16 @@
+------------|---------|----------|---------|---------|------------------------------------------------
+File        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                              
+------------|---------|----------|---------|---------|------------------------------------------------
+All files   |   74.41 |    71.69 |   83.33 |   74.21 |                                                
+ loader.ts  |    70.9 |    71.69 |   84.61 |   70.64 | 53-60,74,79-82,129,132,160,173,186,284,299-331 
+ schemas.ts |   94.73 |      100 |      80 |   94.73 | 172                                            
+------------|---------|----------|---------|---------|------------------------------------------------
+Jest: "global" coverage threshold for statements (90%) not met: 74.41%
+Jest: "global" coverage threshold for branches (90%) not met: 71.69%
+Jest: "global" coverage threshold for lines (90%) not met: 74.21%
+Jest: "global" coverage threshold for functions (90%) not met: 83.33%
+Test Suites: 3 passed, 3 total
+Tests:       54 passed, 54 total
+Snapshots:   0 total
+Time:        1.999 s
+Ran all test suites.

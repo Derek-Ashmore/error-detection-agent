@@ -1,0 +1,16 @@
+Configuration Loader › loadConfig › should load and validate a valid configuration file
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "test-org/test-repo"
+    Received: "Derek-Ashmore/error-detection-agent"
+
+      125 |       expect(config).toBeDefined();
+      126 |       expect(config.azureMonitor.workspaceId).toBe('test-workspace-id');
+    > 127 |       expect(config.github.repository).toBe('test-org/test-repo');
+          |                                        ^
+      128 |       expect(config.environment).toBe('development');
+      129 |     });
+      130 |
+
+      at Object.<anonymous> (tests/config/loader.test.ts:127:40)

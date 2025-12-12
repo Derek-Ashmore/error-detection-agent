@@ -61,3 +61,51 @@ Warning:   13:3  warning  Unexpected console statement  no-console
 Error:   41:29  error  Missing return type on function                              @typescript-eslint/explicit-function-return-type
 Error:   49:35  error  Missing return type on function                              @typescript-eslint/explicit-function-return-type
 Error:   49:35  error  Async arrow function 'asyncError' has no 'await' expression  @typescript-eslint/require-await
+
+## Configuration System Task 2
+
+```
+npx claude-flow@alpha swarm "Please implement task 2 Configuration System as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md. Mark tasks complete in tasks.md once you're able to verify them. Please let me know if you need additional information or capabilities." --claude
+```
+
+- Please implement task 2 Configuration System as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md
+- Mark tasks complete in tasks.md once you're able to verify them.
+- Please let me know if you need additional information or capabilities.
+
+> Verification Defects
+
+```
+npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/error-linter-2025-12-12-15-06.txt. Please let me know if you need more information." --claude
+```
+
+- Please fix the linter errors in file instructions/error-linter-2025-12-12-15-06.txt
+- Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the type check errors in file instructions/error-type-check-2025-12-12-15-50.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the type check errors in file instructions/error-type-check-2025-12-12-15-50.txt
+- Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the test failures in file instructions/error-test-failure-2025-12-12-16-07.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the test failures in file instructions/error-test-failure-2025-12-12-16-07.txt
+- Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the test coverage issue in file instructions/error-test-failure-2025-12-12-16-24.txt. Is the 90% coverage threshold specified reasonable?  I usually us 80%. Please let me know if you need additional information." --claude
+```
+
+- Please fix the test coverage issue in file instructions/error-test-failure-2025-12-12-16-24.txt.
+- Is the 90% coverage threshold specified reasonable?  I usually us 80%.
+- Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/error-linter-2025-12-12-16-40.txt. Please let me know if you need more information." --claude
+```
+
+- Please fix the linter errors in file instructions/error-linter-2025-12-12-16-40.txt
+- Please let me know if you need additional information.
