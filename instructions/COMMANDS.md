@@ -61,3 +61,13 @@ Warning:   13:3  warning  Unexpected console statement  no-console
 Error:   41:29  error  Missing return type on function                              @typescript-eslint/explicit-function-return-type
 Error:   49:35  error  Missing return type on function                              @typescript-eslint/explicit-function-return-type
 Error:   49:35  error  Async arrow function 'asyncError' has no 'await' expression  @typescript-eslint/require-await
+
+## Configuration System Task 2
+
+```
+npx claude-flow@alpha swarm "Please implement task 2 Configuration System as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md. Mark tasks complete in tasks.md once you're able to verify them. Please let me know if you need additional information or capabilities." --claude
+```
+
+- Please implement task 2 Configuration System as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md
+- Mark tasks complete in tasks.md once you're able to verify them.
+- Please let me know if you need additional information or capabilities.
