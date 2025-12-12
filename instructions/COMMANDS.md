@@ -87,3 +87,10 @@ npx claude-flow@alpha swarm "Please fix the type check errors in file instructio
 
 - Please fix the type check errors in file instructions/error-type-check-2025-12-12-15-50.txt
 - Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the test failures in file instructions/error-test-failure-2025-12-12-16-07.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the test failures in file instructions/error-test-failure-2025-12-12-16-07.txt
+- Please let me know if you need additional information.
