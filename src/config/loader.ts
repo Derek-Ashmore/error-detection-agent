@@ -7,10 +7,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import * as yaml from 'js-yaml';
 import { z } from 'zod';
-import { AppConfig, ConfigLoadOptions } from './types';
+
 import { appConfigSchema } from './schemas';
+import { AppConfig, ConfigLoadOptions } from './types';
 
 /**
  * Configuration loading error
@@ -18,10 +20,7 @@ import { appConfigSchema } from './schemas';
 export class ConfigurationError extends Error {
   public override readonly cause?: unknown;
 
-  constructor(
-    message: string,
-    cause?: unknown,
-  ) {
+  constructor(message: string, cause?: unknown) {
     super(message);
     this.name = 'ConfigurationError';
     this.cause = cause;
@@ -42,7 +41,7 @@ const DEFAULT_CONFIG_PATHS = [
  * Find configuration file
  */
 function findConfigFile(configPath?: string): string {
-  if (configPath) {
+  if (configPath !== undefined && configPath !== '') {
     const resolvedPath = path.resolve(configPath);
     if (!fs.existsSync(resolvedPath)) {
       throw new ConfigurationError(`Configuration file not found: ${resolvedPath}`);
@@ -59,7 +58,7 @@ function findConfigFile(configPath?: string): string {
   }
 
   throw new ConfigurationError(
-    `No configuration file found. Tried: ${DEFAULT_CONFIG_PATHS.join(', ')}`,
+    `No configuration file found. Tried: ${DEFAULT_CONFIG_PATHS.join(', ')}`
   );
 }
 
@@ -71,7 +70,7 @@ function loadYamlFile(filePath: string): unknown {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const parsed = yaml.load(fileContent);
 
-    if (!parsed || typeof parsed !== 'object') {
+    if (parsed === null || parsed === undefined || typeof parsed !== 'object') {
       throw new ConfigurationError('Configuration file must contain an object');
     }
 
@@ -80,10 +79,7 @@ function loadYamlFile(filePath: string): unknown {
     if (error instanceof ConfigurationError) {
       throw error;
     }
-    throw new ConfigurationError(
-      `Failed to load YAML file: ${filePath}`,
-      error,
-    );
+    throw new ConfigurationError(`Failed to load YAML file: ${filePath}`, error);
   }
 }
 
@@ -98,7 +94,7 @@ function loadYamlFile(filePath: string): unknown {
  * - GITHUB_TOKEN -> github.token
  * - GITHUB_REPOSITORY -> github.repository
  */
-function applyEnvironmentOverrides(config: any): void {
+function applyEnvironmentOverrides(config: Record<string, unknown>): void {
   const envMappings: Record<string, string> = {
     AZURE_WORKSPACE_ID: 'azureMonitor.workspaceId',
     AZURE_TENANT_ID: 'azureMonitor.tenantId',
@@ -114,7 +110,7 @@ function applyEnvironmentOverrides(config: any): void {
 
   for (const [envVar, configPath] of Object.entries(envMappings)) {
     const envValue = process.env[envVar];
-    if (envValue) {
+    if (envValue !== undefined && envValue !== '') {
       setNestedValue(config, configPath, envValue);
     }
   }
@@ -123,21 +119,23 @@ function applyEnvironmentOverrides(config: any): void {
 /**
  * Set nested object value using dot notation
  */
-function setNestedValue(obj: any, path: string, value: any): void {
+function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
   const keys = path.split('.');
-  let current = obj;
+  let current: Record<string, unknown> = obj;
 
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
-    if (!key) continue;
+    if (key === undefined || key === '') {
+      continue;
+    }
     if (!(key in current)) {
       current[key] = {};
     }
-    current = current[key];
+    current = current[key] as Record<string, unknown>;
   }
 
   const lastKey = keys[keys.length - 1];
-  if (lastKey) {
+  if (lastKey !== undefined && lastKey !== '') {
     current[lastKey] = value;
   }
 }
@@ -150,15 +148,14 @@ function validateConfig(config: unknown): AppConfig {
     return appConfigSchema.parse(config);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const formattedErrors = error.errors.map(err => {
-        const path = err.path.join('.');
-        return `  - ${path}: ${err.message}`;
-      }).join('\n');
+      const formattedErrors = error.errors
+        .map((err) => {
+          const path = err.path.join('.');
+          return `  - ${path}: ${err.message}`;
+        })
+        .join('\n');
 
-      throw new ConfigurationError(
-        `Configuration validation failed:\n${formattedErrors}`,
-        error,
-      );
+      throw new ConfigurationError(`Configuration validation failed:\n${formattedErrors}`, error);
     }
     throw new ConfigurationError('Configuration validation failed', error);
   }
@@ -168,21 +165,18 @@ function validateConfig(config: unknown): AppConfig {
  * Load environment-specific overrides
  */
 function loadEnvironmentOverrides(
-  baseConfig: any,
+  baseConfig: Record<string, unknown>,
   environment?: string,
-  basePath?: string,
-): any {
-  if (!environment) {
+  basePath?: string
+): Record<string, unknown> {
+  if (environment === undefined || environment === '') {
     return baseConfig;
   }
 
-  const envConfigPaths = [
-    `config/${environment}.yaml`,
-    `config/${environment}.yml`,
-  ];
+  const envConfigPaths = [`config/${environment}.yaml`, `config/${environment}.yml`];
 
   for (const envPath of envConfigPaths) {
-    const resolvedPath = path.resolve(basePath || '', envPath);
+    const resolvedPath = path.resolve(basePath ?? '', envPath);
     if (fs.existsSync(resolvedPath)) {
       try {
         const envConfig = loadYamlFile(resolvedPath);
@@ -200,15 +194,33 @@ function loadEnvironmentOverrides(
 /**
  * Deep merge two objects
  */
-function deepMerge(target: any, source: any): any {
-  const result = { ...target };
+function deepMerge(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...target };
 
   for (const key in source) {
-    if (source.hasOwnProperty(key)) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        result[key] = deepMerge(target[key] || {}, source[key]);
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
+      if (
+        sourceValue !== null &&
+        sourceValue !== undefined &&
+        typeof sourceValue === 'object' &&
+        !Array.isArray(sourceValue)
+      ) {
+        result[key] = deepMerge(
+          (targetValue !== null &&
+          targetValue !== undefined &&
+          typeof targetValue === 'object' &&
+          !Array.isArray(targetValue)
+            ? targetValue
+            : {}) as Record<string, unknown>,
+          sourceValue as Record<string, unknown>
+        );
       } else {
-        result[key] = source[key];
+        result[key] = sourceValue;
       }
     }
   }
@@ -282,13 +294,9 @@ export function loadConfig(options: ConfigLoadOptions = {}): AppConfig {
  */
 export function loadConfigWithSchema<T>(
   schema: z.ZodSchema<T>,
-  options: ConfigLoadOptions = {},
+  options: ConfigLoadOptions = {}
 ): T {
-  const {
-    configPath,
-    environment = process.env['NODE_ENV'],
-    allowEnvOverrides = true,
-  } = options;
+  const { configPath, environment = process.env['NODE_ENV'], allowEnvOverrides = true } = options;
 
   try {
     // Find and load base configuration file
@@ -308,15 +316,14 @@ export function loadConfigWithSchema<T>(
     return schema.parse(config);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const formattedErrors = error.errors.map(err => {
-        const path = err.path.join('.');
-        return `  - ${path}: ${err.message}`;
-      }).join('\n');
+      const formattedErrors = error.errors
+        .map((err) => {
+          const path = err.path.join('.');
+          return `  - ${path}: ${err.message}`;
+        })
+        .join('\n');
 
-      throw new ConfigurationError(
-        `Configuration validation failed:\n${formattedErrors}`,
-        error,
-      );
+      throw new ConfigurationError(`Configuration validation failed:\n${formattedErrors}`, error);
     }
     if (error instanceof ConfigurationError) {
       throw error;

@@ -25,9 +25,17 @@ export const azureMonitorSchema = z.object({
  */
 export const logFetchingSchema = z.object({
   queryIntervalMinutes: z.number().int().positive('Query interval must be a positive integer'),
-  batchSize: z.number().int().positive('Batch size must be a positive integer').max(10000, 'Batch size cannot exceed 10000'),
+  batchSize: z
+    .number()
+    .int()
+    .positive('Batch size must be a positive integer')
+    .max(10000, 'Batch size cannot exceed 10000'),
   lookbackMinutes: z.number().int().positive('Lookback minutes must be a positive integer'),
-  maxRetries: z.number().int().nonnegative('Max retries must be non-negative').max(10, 'Max retries cannot exceed 10'),
+  maxRetries: z
+    .number()
+    .int()
+    .nonnegative('Max retries must be non-negative')
+    .max(10, 'Max retries cannot exceed 10'),
   retryDelayMs: z.number().int().positive('Retry delay must be a positive integer'),
   queryTimeoutMs: z.number().int().positive('Query timeout must be a positive integer'),
   queryTemplate: z.string().optional(),
@@ -42,7 +50,11 @@ export const failurePatternSchema = z.object({
   type: z.enum(['error', 'warning', 'critical'], {
     errorMap: () => ({ message: 'Type must be one of: error, warning, critical' }),
   }),
-  priority: z.number().int().min(1, 'Priority must be at least 1').max(10, 'Priority cannot exceed 10'),
+  priority: z
+    .number()
+    .int()
+    .min(1, 'Priority must be at least 1')
+    .max(10, 'Priority cannot exceed 10'),
   description: z.string().optional(),
   enabled: z.boolean(),
 });
@@ -52,7 +64,10 @@ export const failurePatternSchema = z.object({
  */
 export const failureDetectionSchema = z.object({
   patterns: z.array(failurePatternSchema).min(1, 'At least one failure pattern is required'),
-  confidenceThreshold: z.number().min(0, 'Confidence threshold must be at least 0').max(1, 'Confidence threshold cannot exceed 1'),
+  confidenceThreshold: z
+    .number()
+    .min(0, 'Confidence threshold must be at least 0')
+    .max(1, 'Confidence threshold cannot exceed 1'),
   enableMlDetection: z.boolean(),
   errorKeywords: z.array(z.string()),
   failureLogLevels: z.array(z.string()),
@@ -77,7 +92,10 @@ export const githubSchema = z.object({
  */
 export const duplicateDetectionSchema = z.object({
   enabled: z.boolean(),
-  similarityThreshold: z.number().min(0, 'Similarity threshold must be at least 0').max(1, 'Similarity threshold cannot exceed 1'),
+  similarityThreshold: z
+    .number()
+    .min(0, 'Similarity threshold must be at least 0')
+    .max(1, 'Similarity threshold cannot exceed 1'),
   timeWindowHours: z.number().int().positive('Time window must be a positive integer'),
   algorithm: z.enum(['levenshtein', 'jaccard', 'cosine'], {
     errorMap: () => ({ message: 'Algorithm must be one of: levenshtein, jaccard, cosine' }),
@@ -94,7 +112,10 @@ export const schedulerSchema = z.object({
   cronExpression: z.string().min(1, 'Cron expression is required'),
   timezone: z.string().min(1, 'Timezone is required'),
   runOnStartup: z.boolean(),
-  maxConcurrentExecutions: z.number().int().positive('Max concurrent executions must be a positive integer'),
+  maxConcurrentExecutions: z
+    .number()
+    .int()
+    .positive('Max concurrent executions must be a positive integer'),
   executionTimeoutMs: z.number().int().positive('Execution timeout must be a positive integer'),
 });
 
@@ -105,7 +126,9 @@ const emailConfigSchema = z.object({
   smtpHost: z.string().min(1, 'SMTP host is required'),
   smtpPort: z.number().int().positive('SMTP port must be a positive integer'),
   from: z.string().email('From must be a valid email address'),
-  to: z.array(z.string().email('Each recipient must be a valid email address')).min(1, 'At least one recipient is required'),
+  to: z
+    .array(z.string().email('Each recipient must be a valid email address'))
+    .min(1, 'At least one recipient is required'),
   username: z.string().optional(),
   password: z.string().optional(),
 });

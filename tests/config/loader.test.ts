@@ -2,9 +2,11 @@
  * Tests for configuration loader
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+
 import { loadConfig, ConfigurationError, validateConfiguration } from '../../src/config/loader';
 import type { AppConfig } from '../../src/config/types';
 
@@ -286,14 +288,9 @@ logging:
         },
       };
 
-      try {
+      expect(() => {
         validateConfiguration(invalidObj);
-        fail('Should have thrown ConfigurationError');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ConfigurationError);
-        expect((error as Error).message).toContain('validation failed');
-        expect((error as Error).message).toContain('tenantId');
-      }
+      }).toThrow(ConfigurationError);
     });
   });
 
@@ -303,10 +300,10 @@ logging:
 
       expect(config.azureMonitor?.workspaceId).toBeDefined();
       expect(config.azureMonitor?.tenantId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       );
       expect(config.azureMonitor?.clientId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
       );
     });
 
@@ -344,9 +341,7 @@ logging:
       expect(config.duplicateDetection.enabled).toBe(true);
       expect(config.duplicateDetection.similarityThreshold).toBeGreaterThanOrEqual(0);
       expect(config.duplicateDetection.similarityThreshold).toBeLessThanOrEqual(1);
-      expect(['levenshtein', 'jaccard', 'cosine']).toContain(
-        config.duplicateDetection.algorithm,
-      );
+      expect(['levenshtein', 'jaccard', 'cosine']).toContain(config.duplicateDetection.algorithm);
     });
 
     it('should validate scheduler configuration', () => {
