@@ -10,12 +10,12 @@
 - [x] 1.7 Add .gitignore for Node.js projects
 
 ## 2. Configuration System
-- [ ] 2.1 Define configuration schema (TypeScript types)
-- [ ] 2.2 Implement YAML configuration loader
-- [ ] 2.3 Add configuration validation (Zod or similar)
-- [ ] 2.4 Create sample configuration file
-- [ ] 2.5 Write tests for config loader (unit)
-- [ ] 2.6 Document configuration options
+- [x] 2.1 Define configuration schema (TypeScript types)
+- [x] 2.2 Implement YAML configuration loader
+- [x] 2.3 Add configuration validation (Zod or similar)
+- [x] 2.4 Create sample configuration file
+- [x] 2.5 Write tests for config loader (unit)
+- [x] 2.6 Document configuration options
 
 ## 3. Log Fetcher (Azure Integration)
 - [ ] 3.1 Set up Azure authentication (DefaultAzureCredential)
