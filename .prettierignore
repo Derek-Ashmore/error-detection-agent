@@ -1,0 +1,60 @@
+# Dependencies
+node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist
+build
+coverage
+*.tsbuildinfo
+
+# Generated files
+.next
+.nuxt
+.vuepress/dist
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OpenSpec and project specific
+.openspec
+.swarm
+.hive-mind
+.claude-flow
+.claude
+.cursor
+
+# Git
+.git
+.gitignore
+
+# Documentation (when auto-generated)
+# docs/api
+
+# Test snapshots
+**/__snapshots__
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
