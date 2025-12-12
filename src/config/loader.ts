@@ -180,7 +180,7 @@ function loadEnvironmentOverrides(
     if (fs.existsSync(resolvedPath)) {
       try {
         const envConfig = loadYamlFile(resolvedPath);
-        return deepMerge(baseConfig, envConfig);
+        return deepMerge(baseConfig, envConfig as Record<string, unknown>);
       } catch (error) {
         // Continue if environment-specific file fails to load
         console.warn(`Warning: Failed to load environment config: ${envPath}`);
@@ -264,11 +264,11 @@ export function loadConfig(options: ConfigLoadOptions = {}): AppConfig {
     let config = loadYamlFile(filePath);
 
     // Load environment-specific overrides
-    config = loadEnvironmentOverrides(config, environment, baseDir);
+    config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);
 
     // Apply environment variable overrides
     if (allowEnvOverrides) {
-      applyEnvironmentOverrides(config);
+      applyEnvironmentOverrides(config as Record<string, unknown>);
     }
 
     // Validate configuration
@@ -305,11 +305,11 @@ export function loadConfigWithSchema<T>(
     let config = loadYamlFile(filePath);
 
     // Load environment-specific overrides
-    config = loadEnvironmentOverrides(config, environment, baseDir);
+    config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);
 
     // Apply environment variable overrides
     if (allowEnvOverrides) {
-      applyEnvironmentOverrides(config);
+      applyEnvironmentOverrides(config as Record<string, unknown>);
     }
 
     // Validate with custom schema
