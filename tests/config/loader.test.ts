@@ -17,6 +17,11 @@ describe('Configuration Loader', () => {
   const envConfigPath = path.join(testConfigDir, 'production.yaml');
 
   beforeEach(() => {
+    // Clear environment variables before each test
+    delete process.env['AZURE_WORKSPACE_ID'];
+    delete process.env['GITHUB_TOKEN'];
+    delete process.env['GITHUB_REPOSITORY'];
+
     // Create test config directory
     if (!fs.existsSync(testConfigDir)) {
       fs.mkdirSync(testConfigDir, { recursive: true });
@@ -116,6 +121,7 @@ logging:
     // Clear environment variables
     delete process.env['AZURE_WORKSPACE_ID'];
     delete process.env['GITHUB_TOKEN'];
+    delete process.env['GITHUB_REPOSITORY'];
   });
 
   describe('loadConfig', () => {
