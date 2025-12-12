@@ -28,7 +28,7 @@ npx claude-flow@alpha swarm "This is a new application without existing function
 ## Project Setup Task 1
 
 ```
-npx claude-flow@alpha swarm "Please implement task 1 Project Setup as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md. Include a GitHub workflow that will verify all pull requests that are created or changed. Please let me know if you need additional information." --claude
+npx claude-flow@alpha swarm "Please implement task 1 Project Setup as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md. Include a GitHub workflow that will verify all pull requests that are created or changed. Please let me know if you need additional information or capabilities." --claude
 ```
 
 - Please implement task 1 Project Setup as documented in file openspec/changes/add-mvp-error-detection-agent/tasks.md
