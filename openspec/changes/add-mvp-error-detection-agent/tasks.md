@@ -21,12 +21,12 @@
 - [x] 2.9 Configuration export with redacted secrets
 
 ## 3. Log Fetcher (Azure Integration)
-- [ ] 3.1 Set up Azure authentication (DefaultAzureCredential)
-- [ ] 3.2 Implement query builder for KQL queries
-- [ ] 3.3 Create log fetcher service
-- [ ] 3.4 Add error handling and retries
-- [ ] 3.5 Implement rate limiting
-- [ ] 3.6 Write tests with mocked Azure SDK (unit)
+- [x] 3.1 Set up Azure authentication (DefaultAzureCredential)
+- [x] 3.2 Implement query builder for KQL queries
+- [x] 3.3 Create log fetcher service
+- [x] 3.4 Add error handling and retries
+- [x] 3.5 Implement rate limiting
+- [x] 3.6 Write tests with mocked Azure SDK (unit)
 - [ ] 3.7 Add integration test with test Azure workspace
 
 ## 4. Failure Detector
