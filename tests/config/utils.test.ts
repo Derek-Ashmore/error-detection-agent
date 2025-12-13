@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from '@jest/globals';
+import { load as yamlLoad } from 'js-yaml';
 import { z } from 'zod';
 
 import type { AppConfig } from '../../src/config/types';
@@ -237,9 +238,8 @@ describe('Configuration Utilities', () => {
 
     it('should be valid YAML that can be parsed', () => {
       const yaml = exportConfiguration(sampleConfig);
-      const jsYaml = require('js-yaml');
 
-      expect(() => jsYaml.load(yaml)).not.toThrow();
+      expect(() => yamlLoad(yaml)).not.toThrow();
     });
   });
 

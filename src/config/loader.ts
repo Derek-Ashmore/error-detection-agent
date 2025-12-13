@@ -80,7 +80,7 @@ function substituteEnvVar(value: string): { value: unknown; substitution?: EnvSu
   const envPattern = /^env:([A-Z_][A-Z0-9_]*?)(?::(.*))?$/;
   const match = envPattern.exec(value);
 
-  if (!match) {
+  if (match === null) {
     return { value };
   }
 
@@ -349,16 +349,7 @@ export function loadConfig(options: ConfigLoadOptions = {}): AppConfig {
     config = processEnvSubstitutions(config, substitutions);
 
     // Log environment variable substitutions (not values for security)
-    if (substitutions.length > 0) {
-      console.log('[Config] Environment variable substitutions:');
-      for (const sub of substitutions) {
-        if (sub.usedDefault) {
-          console.log(`  - ${sub.variable} (using default value)`);
-        } else {
-          console.log(`  - ${sub.variable}`);
-        }
-      }
-    }
+    // Logging disabled per linter rules - use debug logging if needed
 
     // Load environment-specific overrides
     config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);
@@ -406,16 +397,7 @@ export function loadConfigWithSchema<T>(
     config = processEnvSubstitutions(config, substitutions);
 
     // Log environment variable substitutions (not values for security)
-    if (substitutions.length > 0) {
-      console.log('[Config] Environment variable substitutions:');
-      for (const sub of substitutions) {
-        if (sub.usedDefault) {
-          console.log(`  - ${sub.variable} (using default value)`);
-        } else {
-          console.log(`  - ${sub.variable}`);
-        }
-      }
-    }
+    // Logging disabled per linter rules - use debug logging if needed
 
     // Load environment-specific overrides
     config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);

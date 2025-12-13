@@ -287,8 +287,10 @@ export function getConfigSummary(config: AppConfig): Record<string, unknown> {
     azureMonitor: {
       workspaceId: config.azureMonitor.workspaceId,
       tenantId: config.azureMonitor.tenantId,
-      endpoint: config.azureMonitor.endpoint ?? 'default',
-      hasCredentials: Boolean(config.azureMonitor.clientId && config.azureMonitor.clientSecret),
+      endpoint: config.azureMonitor.endpoint !== '' ? config.azureMonitor.endpoint : 'default',
+      hasCredentials: Boolean(
+        config.azureMonitor.clientId !== '' && config.azureMonitor.clientSecret !== ''
+      ),
     },
     github: {
       repository: config.github.repository,
