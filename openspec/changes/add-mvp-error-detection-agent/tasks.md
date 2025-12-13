@@ -11,11 +11,14 @@
 
 ## 2. Configuration System
 - [x] 2.1 Define configuration schema (TypeScript types)
-- [x] 2.2 Implement YAML configuration loader
-- [x] 2.3 Add configuration validation (Zod or similar)
+- [x] 2.2 Implement YAML configuration loader with env: substitution
+- [x] 2.3 Add configuration validation (Zod schemas)
 - [x] 2.4 Create sample configuration file
-- [x] 2.5 Write tests for config loader (unit)
+- [x] 2.5 Write tests for config loader (unit) - 92.2% coverage
 - [x] 2.6 Document configuration options
+- [x] 2.7 Environment variable substitution (env:VAR and env:VAR:default)
+- [x] 2.8 Secrets redaction utilities for safe logging
+- [x] 2.9 Configuration export with redacted secrets
 
 ## 3. Log Fetcher (Azure Integration)
 - [ ] 3.1 Set up Azure authentication (DefaultAzureCredential)
