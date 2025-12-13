@@ -44,17 +44,35 @@ jobs:
 
       - name: Run linting
         id: lint
-        run: npm run lint 2>&1 | tee lint-errors.txt
+        run: |
+          npm run lint 2>&1 | tee lint-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "lint_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "lint_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
 
       - name: Run type checking
         id: typecheck
-        run: npm run typecheck 2>&1 | tee typecheck-errors.txt
+        run: |
+          npm run typecheck 2>&1 | tee typecheck-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "typecheck_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "typecheck_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
 
       - name: Run tests with coverage
         id: test
-        run: npm test -- --coverage --ci --maxWorkers=2 2>&1 | tee test-errors.txt
+        run: |
+          npm test -- --coverage --ci --maxWorkers=2 2>&1 | tee test-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "test_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "test_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
         env:
           NODE_ENV: test
@@ -132,13 +150,19 @@ jobs:
 
       - name: Check build
         id: build
-        run: npm run build 2>&1 | tee build-errors.txt
+        run: |
+          npm run build 2>&1 | tee build-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "build_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
         env:
           NODE_ENV: production
 
       - name: Capture error details
-        if: always() && (steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure')
+        if: always() && (steps.lint.outputs.lint_failed == 'true' || steps.typecheck.outputs.typecheck_failed == 'true' || steps.test.outputs.test_failed == 'true' || steps.build.outputs.build_failed == 'true')
         run: |
           mkdir -p error-reports
           {
@@ -192,13 +216,24 @@ jobs:
           fi
 
       - name: Post errors for Claude auto-fix
-        if: always() && (steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure')
+        if: always() && (steps.lint.outputs.lint_failed == 'true' || steps.typecheck.outputs.typecheck_failed == 'true' || steps.test.outputs.test_failed == 'true' || steps.build.outputs.build_failed == 'true')
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
+            
+            // Check step outputs for failures
+            const lintFailed = '${{ steps.lint.outputs.lint_failed }}' === 'true';
+            const typecheckFailed = '${{ steps.typecheck.outputs.typecheck_failed }}' === 'true';
+            const testFailed = '${{ steps.test.outputs.test_failed }}' === 'true';
+            const buildFailed = '${{ steps.build.outputs.build_failed }}' === 'true';
+            
+            if (!lintFailed && !typecheckFailed && !testFailed && !buildFailed) {
+              console.log('No errors detected, skipping error posting');
+              return;
+            }
             
             let errorBody = '## ❌ PR Verification Failed - Auto-Fix Request\n\n';
             errorBody += 'This PR has encountered errors during verification. ';
@@ -291,8 +326,9 @@ jobs:
             }
 
       - name: Archive error reports
-        if: always() && (steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure')
+        if: always() && (steps.lint.outputs.lint_failed == 'true' || steps.typecheck.outputs.typecheck_failed == 'true' || steps.test.outputs.test_failed == 'true' || steps.build.outputs.build_failed == 'true')
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: error-reports
           path: |
@@ -300,7 +336,9 @@ jobs:
             lint-errors.txt
             typecheck-errors.txt
             test-errors.txt
+            build-errors.txt
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
@@ -310,8 +348,30 @@ jobs:
           retention-days: 7
 
       - name: Fail workflow if errors occurred
-        if: steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        if: always()
         run: |
-          echo "❌ PR verification failed. Errors have been posted for Claude auto-fix."
-          echo "::error::PR verification failed. Check the PR comments for error details and Claude's auto-fix."
-          exit 1
+          # Check step outputs for failures
+          if [ "${{ steps.lint.outputs.lint_failed }}" = "true" ]; then
+            echo "❌ Linting errors detected"
+            HAS_ERRORS=true
+          fi
+          if [ "${{ steps.typecheck.outputs.typecheck_failed }}" = "true" ]; then
+            echo "❌ Type checking errors detected"
+            HAS_ERRORS=true
+          fi
+          if [ "${{ steps.test.outputs.test_failed }}" = "true" ]; then
+            echo "❌ Test errors detected"
+            HAS_ERRORS=true
+          fi
+          if [ "${{ steps.build.outputs.build_failed }}" = "true" ]; then
+            echo "❌ Build errors detected"
+            HAS_ERRORS=true
+          fi
+          
+          if [ "$HAS_ERRORS" = "true" ]; then
+            echo "❌ PR verification failed. Errors have been posted for Claude auto-fix."
+            echo "::error::PR verification failed. Check the PR comments for error details and Claude's auto-fix."
+            exit 1
+          else
+            echo "✅ All checks passed"
+          fi
