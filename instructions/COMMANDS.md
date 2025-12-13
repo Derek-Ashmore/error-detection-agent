@@ -120,3 +120,12 @@ npx claude-flow@alpha swarm "Please implement the configuration loader specifica
 - Mark tasks complete in openspec/changes/add-mvp-error-detection-agent/tasks.md once you're able to verify them.
 - Code implemented needs to meet testing coverage requirements.
 - Please let me know if you need additional information or capabilities.
+
+> Verification Defects
+
+```
+npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/error-linter-2025-12-13-05-50.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the linter errors in file instructions/error-linter-2025-12-13-05-50.txt.
+- Please let me know if you need additional information.
