@@ -23,6 +23,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
 
     steps:
       - name: Checkout code
@@ -42,15 +43,19 @@ jobs:
           NODE_ENV: development
 
       - name: Run linting
-        run: npm run lint
-        continue-on-error: false
+        id: lint
+        run: npm run lint 2>&1 | tee lint-errors.txt
+        continue-on-error: true
 
       - name: Run type checking
-        run: npm run typecheck
-        continue-on-error: false
+        id: typecheck
+        run: npm run typecheck 2>&1 | tee typecheck-errors.txt
+        continue-on-error: true
 
       - name: Run tests with coverage
-        run: npm test -- --coverage --ci --maxWorkers=2
+        id: test
+        run: npm test -- --coverage --ci --maxWorkers=2 2>&1 | tee test-errors.txt
+        continue-on-error: true
         env:
           NODE_ENV: test
 
@@ -126,9 +131,176 @@ jobs:
           retention-days: 30
 
       - name: Check build
-        run: npm run build
+        id: build
+        run: npm run build 2>&1 | tee build-errors.txt
+        continue-on-error: true
         env:
           NODE_ENV: production
+
+      - name: Capture error details
+        if: failure() || steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        run: |
+          mkdir -p error-reports
+          {
+            echo "# Error Report for PR #${{ github.event.pull_request.number }}"
+            echo ""
+            echo "## Summary"
+            echo "- Linting: ${{ steps.lint.outcome }}"
+            echo "- Type Checking: ${{ steps.typecheck.outcome }}"
+            echo "- Tests: ${{ steps.test.outcome }}"
+            echo "- Build: ${{ steps.build.outcome }}"
+            echo ""
+          } > error-reports/summary.md
+          
+          if [ -f lint-errors.txt ] && [ -s lint-errors.txt ]; then
+            {
+              echo "## Linting Errors"
+              echo "\`\`\`"
+              cat lint-errors.txt
+              echo "\`\`\`"
+              echo ""
+            } >> error-reports/summary.md
+          fi
+          
+          if [ -f typecheck-errors.txt ] && [ -s typecheck-errors.txt ]; then
+            {
+              echo "## Type Checking Errors"
+              echo "\`\`\`"
+              cat typecheck-errors.txt
+              echo "\`\`\`"
+              echo ""
+            } >> error-reports/summary.md
+          fi
+          
+          if [ -f test-errors.txt ] && [ -s test-errors.txt ]; then
+            {
+              echo "## Test Errors"
+              echo "\`\`\`"
+              cat test-errors.txt
+              echo "\`\`\`"
+              echo ""
+            } >> error-reports/summary.md
+          fi
+          
+          if [ -f build-errors.txt ] && [ -s build-errors.txt ]; then
+            {
+              echo "## Build Errors"
+              echo "\`\`\`"
+              cat build-errors.txt
+              echo "\`\`\`"
+            } >> error-reports/summary.md
+          fi
+
+      - name: Post errors for Claude auto-fix
+        if: failure() || steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            let errorBody = '## ❌ PR Verification Failed - Auto-Fix Request\n\n';
+            errorBody += 'This PR has encountered errors during verification. ';
+            errorBody += 'Please review and fix the following issues:\n\n';
+            
+            try {
+              const summary = fs.readFileSync('./error-reports/summary.md', 'utf8');
+              errorBody += summary;
+            } catch (error) {
+              errorBody += 'Error details could not be captured.\n';
+            }
+            
+            errorBody += '\n---\n\n';
+            errorBody += '**🤖 Claude Auto-Fix Instructions:**\n\n';
+            errorBody += 'Please analyze the errors above and automatically fix them by:\n';
+            errorBody += '1. Reviewing the error messages\n';
+            errorBody += '2. Identifying the root causes\n';
+            errorBody += '3. Applying fixes directly to the PR\n';
+            errorBody += '4. Verifying the fixes resolve all issues\n\n';
+            errorBody += '**Files that may need attention:**\n';
+            
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            // Sanitize filenames to prevent issues with maliciously crafted names
+            function sanitizeFilename(filename) {
+              // Remove control characters, limit length, and escape backticks
+              let sanitized = filename.replace(/[\u0000-\u001F\u007F]/g, ''); // remove control chars
+              sanitized = sanitized.replace(/`/g, '\\`'); // escape backticks
+              if (sanitized.length > 200) {
+                sanitized = sanitized.slice(0, 200) + '...';
+              }
+              return sanitized;
+            }
+
+            const changedFiles = files
+              .filter(f => f.status !== 'removed')
+              .map(f => `- \`${sanitizeFilename(f.filename)}\``)
+              .slice(0, 20);
+            
+            if (changedFiles.length > 0) {
+              errorBody += changedFiles.join('\n');
+            } else {
+              errorBody += '- Unable to determine changed files';
+            }
+            
+            // Find existing error comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const errorComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('PR Verification Failed')
+            );
+            
+            if (errorComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: errorComment.id,
+                body: errorBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: errorBody
+              });
+            }
+            
+            // Also create a label to help identify PRs needing fixes
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['needs-fix', 'claude-auto-fix']
+              });
+            } catch (error) {
+              // Labels might not exist, that's okay
+              console.log('Could not add labels:', error.message);
+            }
+
+      - name: Archive error reports
+        if: failure() || steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: error-reports
+          path: |
+            error-reports/
+            lint-errors.txt
+            typecheck-errors.txt
+            test-errors.txt
+          retention-days: 7
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
@@ -136,3 +308,10 @@ jobs:
           name: build-artifacts
           path: dist/
           retention-days: 7
+
+      - name: Fail workflow if errors occurred
+        if: steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        run: |
+          echo "❌ PR verification failed. Errors have been posted for Claude auto-fix."
+          echo "::error::PR verification failed. Check the PR comments for error details and Claude's auto-fix."
+          exit 1
