@@ -136,7 +136,7 @@ export class LogFetcher {
     // Build timespan parameter (required)
     // Azure SDK v1.3.3 requires duration in ISO 8601 format or object with start/end
     const durationMinutes = Math.ceil(
-      (timeRange.endTime.getTime() - timeRange.startTime.getTime()) / (1000 * 60),
+      (timeRange.endTime.getTime() - timeRange.startTime.getTime()) / (1000 * 60)
     );
     const queryTimespan = `P${durationMinutes}M` as unknown as QueryTimeInterval;
 
@@ -298,8 +298,7 @@ export class LogFetcher {
     let tables: LogsQuerySuccessfulResult['tables'];
 
     if (response.status === LogsQueryResultStatus.Success) {
-      const successResult = response as LogsQuerySuccessfulResult;
-      tables = successResult.tables;
+      tables = (response as LogsQuerySuccessfulResult).tables;
     } else if (response.status === LogsQueryResultStatus.PartialFailure) {
       // For partial failures, use partialTables
       const partialResult = response as unknown as {
@@ -327,23 +326,18 @@ export class LogFetcher {
     // Convert rows to objects with column names
     const columnNames =
       table.columnDescriptors?.map(
-        (col: { name?: string; type?: string }) => col.name ?? 'unknown',
+        (col: { name?: string; type?: string }) => col.name ?? 'unknown'
       ) ?? [];
 
     return table.rows.map(
       (row: (Date | string | number | Record<string, unknown> | boolean)[]) => {
         const obj: Record<string, unknown> = {};
-        row.forEach(
-          (
-            value: Date | string | number | Record<string, unknown> | boolean,
-            index: number,
-          ) => {
-            const columnName = columnNames[index] ?? `column${index}`;
-            obj[columnName] = value;
-          },
-        );
+        row.forEach((value: Date | string | number | Record<string, unknown> | boolean, index: number) => {
+          const columnName = columnNames[index] ?? `column${index}`;
+          obj[columnName] = value;
+        });
         return obj;
-      },
+      }
     );
   }
 

@@ -343,7 +343,7 @@ describe('KQLQueryBuilder', () => {
       const startTime = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000);
 
       // Act
-      const query = `
+      const _query = `
         traces
         | where timestamp >= datetime('${startTime.toISOString()}')
       `.trim();

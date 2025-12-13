@@ -89,7 +89,7 @@ export class RateLimitHandler {
    */
   private calculateDelay(attemptNumber: number, rateLimitInfo?: RateLimitInfo): number {
     // Use retry-after header if available
-    if (rateLimitInfo?.retryAfterMs) {
+    if (rateLimitInfo?.retryAfterMs !== undefined && rateLimitInfo.retryAfterMs !== null) {
       return rateLimitInfo.retryAfterMs;
     }
 
@@ -120,7 +120,7 @@ export class RateLimitHandler {
       return {
         isLimited: true,
         retryAfterMs: retryAfter,
-        resetTime: retryAfter ? new Date(Date.now() + retryAfter) : undefined,
+        resetTime: retryAfter !== undefined ? new Date(Date.now() + retryAfter) : undefined,
       };
     }
 
@@ -134,7 +134,7 @@ export class RateLimitHandler {
    * @returns True if rate limit error
    */
   private isRateLimitError(error: unknown): boolean {
-    if (!error || typeof error !== 'object') {
+    if (error === null || error === undefined || typeof error !== 'object') {
       return false;
     }
 
@@ -155,7 +155,7 @@ export class RateLimitHandler {
    * @returns Retry-after delay in milliseconds, or undefined
    */
   private extractRetryAfter(error: unknown): number | undefined {
-    if (!error || typeof error !== 'object') {
+    if (error === null || error === undefined || typeof error !== 'object') {
       return undefined;
     }
 
@@ -169,13 +169,13 @@ export class RateLimitHandler {
     };
 
     const headers = azureError.response?.headers;
-    if (!headers) {
+    if (headers === undefined || headers === null) {
       return undefined;
     }
 
     // Try x-ms-retry-after-ms first (Azure-specific)
     const msHeader = headers['x-ms-retry-after-ms'];
-    if (msHeader) {
+    if (msHeader !== undefined && msHeader !== null) {
       const ms = typeof msHeader === 'string' ? parseInt(msHeader, 10) : msHeader;
       if (!isNaN(ms)) {
         return ms;
@@ -184,7 +184,7 @@ export class RateLimitHandler {
 
     // Try standard retry-after header
     const retryAfter = headers['retry-after'];
-    if (retryAfter) {
+    if (retryAfter !== undefined && retryAfter !== null) {
       const value = typeof retryAfter === 'string' ? parseInt(retryAfter, 10) : retryAfter;
       if (!isNaN(value)) {
         // retry-after is in seconds, convert to milliseconds
@@ -202,7 +202,7 @@ export class RateLimitHandler {
    * @returns True if retryable
    */
   private isRetryableError(error: unknown): boolean {
-    if (!error || typeof error !== 'object') {
+    if (error === null || error === undefined || typeof error !== 'object') {
       return false;
     }
 
@@ -214,7 +214,7 @@ export class RateLimitHandler {
 
     // Retryable HTTP status codes
     const retryableStatusCodes = [408, 500, 502, 503, 504];
-    if (azureError.statusCode && retryableStatusCodes.includes(azureError.statusCode)) {
+    if (azureError.statusCode !== undefined && retryableStatusCodes.includes(azureError.statusCode)) {
       return true;
     }
 
@@ -227,12 +227,12 @@ export class RateLimitHandler {
       'ENETUNREACH',
       'NETWORK_ERROR',
     ];
-    if (azureError.code && retryableCodes.includes(azureError.code)) {
+    if (azureError.code !== undefined && retryableCodes.includes(azureError.code)) {
       return true;
     }
 
     // Check for timeout in message
-    const message = azureError.message?.toLowerCase() || '';
+    const message = azureError.message?.toLowerCase() ?? '';
     if (message.includes('timeout') || message.includes('timed out')) {
       return true;
     }

@@ -71,7 +71,7 @@ export class LogEntryParser {
     for (const row of rows) {
       try {
         const entry = this.parseLogRow(row as RawLogRow);
-        if (entry) {
+        if (entry !== null) {
           result.entries.push(entry);
         }
       } catch (error) {
@@ -295,7 +295,7 @@ export class LogEntryParser {
   getSeverityLevel(severity: string): number {
     const entries = Object.entries(this.severityMap);
     const entry = entries.find(([, value]) => value === severity);
-    return entry ? parseInt(entry[0], 10) : -1;
+    return entry !== undefined ? parseInt(entry[0], 10) : -1;
   }
 
   /**

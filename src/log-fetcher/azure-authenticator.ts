@@ -89,7 +89,11 @@ export class AzureAuthenticator {
       // Request a token for Azure Monitor scope
       const tokenResponse = await credential.getToken('https://api.loganalytics.io/.default');
 
-      if (tokenResponse?.token !== null && tokenResponse?.token !== undefined && tokenResponse.token.length > 0) {
+      if (
+        tokenResponse?.token !== null &&
+        tokenResponse?.token !== undefined &&
+        tokenResponse.token.length > 0
+      ) {
         // Token is valid
       } else {
         throw new Error('Failed to obtain access token');

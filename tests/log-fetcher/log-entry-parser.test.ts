@@ -55,7 +55,7 @@ describe('LogEntryParser', () => {
 
       // Act
       const errorCodeMatch = rawLogEntry.message.match(/Error:\s+(\w+)/);
-      const errorCode = errorCodeMatch ? errorCodeMatch[1] : rawLogEntry.customDimensions.errorCode;
+      const errorCode = errorCodeMatch !== null && errorCodeMatch !== undefined ? errorCodeMatch[1] : rawLogEntry.customDimensions.errorCode;
 
       // Assert
       expect(errorCode).toBe('ECONNREFUSED');
@@ -92,11 +92,11 @@ describe('LogEntryParser', () => {
 
       // Act
       const locationMatch = stackFrame.match(/\((.+):(\d+):(\d+)\)/);
-      const sourceLocation = locationMatch
+      const sourceLocation = locationMatch !== null && locationMatch !== undefined
         ? {
-            file: locationMatch[1],
-            line: parseInt(locationMatch[2], 10),
-            column: parseInt(locationMatch[3], 10),
+            file: locationMatch[1] ?? '',
+            line: parseInt(locationMatch[2] ?? '0', 10),
+            column: parseInt(locationMatch[3] ?? '0', 10),
           }
         : null;
 
