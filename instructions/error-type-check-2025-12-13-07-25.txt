@@ -1,0 +1,13 @@
+npm run typecheck
+  shell: /usr/bin/bash -e {0}
+
+> error-detection-agent@0.1.0 typecheck
+> tsc --noEmit
+
+Error: tests/config/utils.test.ts(518,9): error TS2322: Type '{ code: z.ZodIssueCode; path: string[]; message: string; }' is not assignable to type 'ZodIssue'.
+  Type '{ code: z.ZodIssueCode; path: string[]; message: string; }' is not assignable to type 'ZodNotFiniteIssue & { fatal?: boolean | undefined; message: string; }'.
+    Type '{ code: z.ZodIssueCode; path: string[]; message: string; }' is not assignable to type 'ZodNotFiniteIssue'.
+      Types of property 'code' are incompatible.
+        Type '"unrecognized_keys" | "custom" | "invalid_union" | "invalid_union_discriminator" | "invalid_arguments" | "invalid_return_type" | "invalid_string" | "not_multiple_of" | "invalid_literal" | ... 6 more ... | "too_small"' is not assignable to type '"not_finite"'.
+          Type '"unrecognized_keys"' is not assignable to type '"not_finite"'.
+Error: Process completed with exit code 2.

@@ -136,3 +136,10 @@ npx claude-flow@alpha swarm "Please fix the test coverage issue in file instruct
 
 - Please fix the test coverage issue in file instructions/error-test-failure-2025-12-13-06-01.txt.
 - Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the type check errors in file instructions/error-type-check-2025-12-13-07-25.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the type check errors in file instructions/error-type-check-2025-12-13-07-25.txt.
+- Please let me know if you need additional information.
