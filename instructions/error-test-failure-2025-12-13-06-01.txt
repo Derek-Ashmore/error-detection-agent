@@ -1,0 +1,15 @@
+------------|---------|----------|---------|---------|-----------------------------
+File        | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s           
+------------|---------|----------|---------|---------|-----------------------------
+All files   |    88.7 |    77.47 |   96.66 |   88.52 |                             
+ loader.ts  |   95.07 |    85.93 |     100 |      95 | 60,91,210,213,241,372,424   
+ schemas.ts |   94.73 |      100 |      80 |   94.73 | 172                         
+ utils.ts   |   77.01 |    65.95 |     100 |   76.47 | 144-153,162-168,172,177-192 
+------------|---------|----------|---------|---------|-----------------------------
+Jest: "global" coverage threshold for branches (80%) not met: 77.47%
+Test Suites: 4 passed, 4 total
+Tests:       105 passed, 105 total
+Snapshots:   0 total
+Time:        2.2 s
+Ran all test suites.
+Error: Process completed with exit code 1.

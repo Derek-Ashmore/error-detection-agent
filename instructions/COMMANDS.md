@@ -129,3 +129,10 @@ npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/e
 
 - Please fix the linter errors in file instructions/error-linter-2025-12-13-05-50.txt.
 - Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "Please fix the test coverage issue in file instructions/error-test-failure-2025-12-13-06-01.txt. Please let me know if you need additional information." --claude
+```
+
+- Please fix the test coverage issue in file instructions/error-test-failure-2025-12-13-06-01.txt.
+- Please let me know if you need additional information.
