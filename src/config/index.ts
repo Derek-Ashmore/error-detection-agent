@@ -42,3 +42,11 @@ export {
   validateConfiguration,
   ConfigurationError,
 } from './loader';
+
+// Export utility functions
+export {
+  redactSecrets,
+  exportConfiguration,
+  generateValidationReport,
+  getConfigSummary,
+} from './utils';
