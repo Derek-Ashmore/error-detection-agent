@@ -947,7 +947,7 @@ environment: "development"
       const logConfigPath = path.join(testConfigDir, 'log-env-config.yaml');
       fs.writeFileSync(logConfigPath, configWithEnvVar);
 
-      const config = loadConfig({ configPath: logConfigPath });
+      const config = loadConfig({ configPath: logConfigPath, allowEnvOverrides: false });
 
       expect(config.azureMonitor.clientSecret).toBe('my-token');
 
@@ -1085,7 +1085,7 @@ environment: "development"
       const secretConfigPath = path.join(testConfigDir, 'secret-config.yaml');
       fs.writeFileSync(secretConfigPath, configWithSecret);
 
-      const config = loadConfig({ configPath: secretConfigPath });
+      const config = loadConfig({ configPath: secretConfigPath, allowEnvOverrides: false });
 
       // Verify the secret was substituted correctly
       expect(config.azureMonitor.clientSecret).toBe('super-secret');

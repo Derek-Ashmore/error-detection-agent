@@ -325,6 +325,209 @@ describe('Configuration Utilities', () => {
       expect(report).toContain('Must be one of: development, staging, production');
     });
 
+    it('should format invalid_string errors with regex validation', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'invalid_string',
+          validation: 'regex',
+          path: ['github', 'repository'],
+          message: 'Invalid format',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('github.repository');
+      expect(report).toContain('Value does not match required pattern');
+    });
+
+    it('should format invalid_string errors with email validation', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'invalid_string',
+          validation: 'email',
+          path: ['notification', 'email', 'from'],
+          message: 'Invalid email',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('notification.email.from');
+      expect(report).toContain('Invalid email format');
+    });
+
+    it('should format invalid_string errors with url validation', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'invalid_string',
+          validation: 'url',
+          path: ['azureMonitor', 'endpoint'],
+          message: 'Invalid URL',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('azureMonitor.endpoint');
+      expect(report).toContain('Invalid URL format');
+    });
+
+    it('should format invalid_string errors with generic validation', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'invalid_string',
+          validation: 'uuid' as z.StringValidation,
+          path: ['someId'],
+          message: 'Invalid string',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('someId');
+      expect(report).toContain('Invalid string value');
+    });
+
+    it('should format too_small errors for numbers', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'too_small',
+          minimum: 1,
+          type: 'number',
+          inclusive: true,
+          exact: false,
+          path: ['logFetching', 'batchSize'],
+          message: 'Number must be at least 1',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('logFetching.batchSize');
+      expect(report).toContain('Must be at least 1');
+    });
+
+    it('should format too_small errors for arrays', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'too_small',
+          minimum: 1,
+          type: 'array',
+          inclusive: true,
+          exact: false,
+          path: ['github', 'defaultLabels'],
+          message: 'Array must contain at least 1 element(s)',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('github.defaultLabels');
+      expect(report).toContain('Must contain at least 1 items');
+    });
+
+    it('should format too_big errors for strings', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'too_big',
+          maximum: 255,
+          type: 'string',
+          inclusive: true,
+          exact: false,
+          path: ['github', 'repository'],
+          message: 'String must contain at most 255 character(s)',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('github.repository');
+      expect(report).toContain('Must be at most 255 characters long');
+    });
+
+    it('should format too_big errors for arrays', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'too_big',
+          maximum: 10,
+          type: 'array',
+          inclusive: true,
+          exact: false,
+          path: ['github', 'assignees'],
+          message: 'Array must contain at most 10 element(s)',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('github.assignees');
+      expect(report).toContain('Must contain at most 10 items');
+    });
+
+    it('should format invalid_union errors', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'invalid_union',
+          unionErrors: [],
+          path: ['logging', 'format'],
+          message: 'Invalid union',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('logging.format');
+      expect(report).toContain('Value does not match any of the expected types');
+    });
+
+    it('should format unrecognized_keys errors', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'unrecognized_keys',
+          keys: ['unknownField1', 'unknownField2'],
+          path: ['azureMonitor'],
+          message: 'Unrecognized keys',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('azureMonitor');
+      expect(report).toContain('Unrecognized keys: unknownField1, unknownField2');
+    });
+
+    it('should format custom errors', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'custom',
+          path: ['scheduler', 'cronExpression'],
+          message: 'Invalid cron expression format',
+          params: {},
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('scheduler.cronExpression');
+      expect(report).toContain('Invalid cron expression format');
+    });
+
+    it('should format unknown error codes with default message', () => {
+      const errors: z.ZodIssue[] = [
+        {
+          code: 'not_finite' as z.ZodIssueCode,
+          path: ['someField'],
+          message: 'Must be finite',
+        },
+      ];
+
+      const report = generateValidationReport(errors);
+
+      expect(report).toContain('someField');
+      expect(report).toContain('Must be finite');
+    });
+
     it('should handle multiple errors', () => {
       const errors: z.ZodIssue[] = [
         {
