@@ -516,7 +516,7 @@ describe('Configuration Utilities', () => {
     it('should format unknown error codes with default message', () => {
       const errors: z.ZodIssue[] = [
         {
-          code: 'not_finite' as z.ZodIssueCode,
+          code: 'custom',
           path: ['someField'],
           message: 'Must be finite',
         },
