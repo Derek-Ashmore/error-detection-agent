@@ -1,0 +1,43 @@
+/home/runner/work/error-detection-agent/error-detection-agent/src/config/loader.ts
+Error:    83:8   error    Unexpected nullable object value in conditional. An explicit null check is required  @typescript-eslint/strict-boolean-expressions
+Warning:   353:7   warning  Unexpected console statement                                                         no-console
+Warning:   356:11  warning  Unexpected console statement                                                         no-console
+Warning:   358:11  warning  Unexpected console statement                                                         no-console
+Warning:   410:7   warning  Unexpected console statement                                                         no-console
+Warning:   413:11  warning  Unexpected console statement                                                         no-console
+Warning:   415:11  warning  Unexpected console statement                                                         no-console
+
+/home/runner/work/error-detection-agent/error-detection-agent/src/config/utils.ts
+Error:   291:31  error  Unexpected string value in conditional. An explicit empty string check is required  @typescript-eslint/strict-boolean-expressions
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/config/loader.test.ts
+Warning:    591:27  warning  Unexpected console statement  no-console
+Warning:    592:7   warning  Unexpected console statement  no-console
+Warning:    596:7   warning  Unexpected console statement  no-console
+Warning:    809:27  warning  Unexpected console statement  no-console
+Warning:    810:7   warning  Unexpected console statement  no-console
+Warning:    814:7   warning  Unexpected console statement  no-console
+Warning:    889:27  warning  Unexpected console statement  no-console
+Warning:    890:7   warning  Unexpected console statement  no-console
+Warning:    897:7   warning  Unexpected console statement  no-console
+Warning:    968:27  warning  Unexpected console statement  no-console
+Warning:    970:7   warning  Unexpected console statement  no-console
+Warning:    974:7   warning  Unexpected console statement  no-console
+Warning:   1044:27  warning  Unexpected console statement  no-console
+Warning:   1046:7   warning  Unexpected console statement  no-console
+Warning:   1050:7   warning  Unexpected console statement  no-console
+Warning:   1120:27  warning  Unexpected console statement  no-console
+Warning:   1122:7   warning  Unexpected console statement  no-console
+Warning:   1126:7   warning  Unexpected console statement  no-console
+Warning:   1345:27  warning  Unexpected console statement  no-console
+Warning:   1346:7   warning  Unexpected console statement  no-console
+Warning:   1350:7   warning  Unexpected console statement  no-console
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/config/utils.test.ts
+Error:   240:22  error  Require statement not part of import statement  @typescript-eslint/no-var-requires
+Error:   242:20  error  Unsafe return of an `any` typed value           @typescript-eslint/no-unsafe-return
+Error:   242:20  error  Unsafe call of an `any` typed value             @typescript-eslint/no-unsafe-call
+
+✖ 32 problems (5 errors, 27 warnings)
+
+Error: Process completed with exit code 1.

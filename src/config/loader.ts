@@ -63,6 +63,87 @@ function findConfigFile(configPath?: string): string {
 }
 
 /**
+ * Environment variable substitution result
+ */
+interface EnvSubstitution {
+  variable: string;
+  usedDefault: boolean;
+}
+
+/**
+ * Substitute environment variables in a value
+ * Supports patterns:
+ * - env:VAR_NAME - substitutes with environment variable, fails if not set
+ * - env:VAR_NAME:default_value - substitutes with env var or default if not set
+ */
+function substituteEnvVar(value: string): { value: unknown; substitution?: EnvSubstitution } {
+  const envPattern = /^env:([A-Z_][A-Z0-9_]*?)(?::(.*))?$/;
+  const match = envPattern.exec(value);
+
+  if (match === null) {
+    return { value };
+  }
+
+  const varName = match[1];
+  const defaultValue = match[2];
+
+  if (varName === undefined) {
+    return { value };
+  }
+
+  const envValue = process.env[varName];
+
+  if (envValue !== undefined) {
+    return {
+      value: envValue,
+      substitution: { variable: varName, usedDefault: false },
+    };
+  }
+
+  if (defaultValue !== undefined) {
+    return {
+      value: defaultValue,
+      substitution: { variable: varName, usedDefault: true },
+    };
+  }
+
+  throw new ConfigurationError(
+    `Required environment variable ${varName} is not set and no default value provided`
+  );
+}
+
+/**
+ * Recursively process configuration values for environment variable substitution
+ */
+function processEnvSubstitutions(value: unknown, substitutions: EnvSubstitution[] = []): unknown {
+  // Handle string values - check for env: pattern
+  if (typeof value === 'string') {
+    const result = substituteEnvVar(value);
+    if (result.substitution !== undefined) {
+      substitutions.push(result.substitution);
+    }
+    return result.value;
+  }
+
+  // Handle arrays - recursively process each element
+  if (Array.isArray(value)) {
+    return value.map((item) => processEnvSubstitutions(item, substitutions));
+  }
+
+  // Handle objects - recursively process each property
+  if (value !== null && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value)) {
+      result[key] = processEnvSubstitutions(val, substitutions);
+    }
+    return result;
+  }
+
+  // Return primitive values as-is (number, boolean, null, undefined)
+  return value;
+}
+
+/**
  * Load YAML file
  */
 function loadYamlFile(filePath: string): unknown {
@@ -263,6 +344,13 @@ export function loadConfig(options: ConfigLoadOptions = {}): AppConfig {
     const baseDir = path.dirname(filePath);
     let config = loadYamlFile(filePath);
 
+    // Process environment variable substitutions in YAML values
+    const substitutions: EnvSubstitution[] = [];
+    config = processEnvSubstitutions(config, substitutions);
+
+    // Log environment variable substitutions (not values for security)
+    // Logging disabled per linter rules - use debug logging if needed
+
     // Load environment-specific overrides
     config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);
 
@@ -303,6 +391,13 @@ export function loadConfigWithSchema<T>(
     const filePath = findConfigFile(configPath);
     const baseDir = path.dirname(filePath);
     let config = loadYamlFile(filePath);
+
+    // Process environment variable substitutions in YAML values
+    const substitutions: EnvSubstitution[] = [];
+    config = processEnvSubstitutions(config, substitutions);
+
+    // Log environment variable substitutions (not values for security)
+    // Logging disabled per linter rules - use debug logging if needed
 
     // Load environment-specific overrides
     config = loadEnvironmentOverrides(config as Record<string, unknown>, environment, baseDir);

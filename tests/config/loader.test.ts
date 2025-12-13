@@ -450,6 +450,864 @@ logging:
     });
   });
 
+  describe('Environment Variable Substitution', () => {
+    it('should substitute environment variable with env:VAR_NAME syntax', () => {
+      process.env['TEST_TOKEN'] = 'my-secret-token';
+
+      const configWithEnvVar = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "env:TEST_TOKEN"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const envConfigPath = path.join(testConfigDir, 'env-var-config.yaml');
+      fs.writeFileSync(envConfigPath, configWithEnvVar);
+
+      const config = loadConfig({
+        configPath: envConfigPath,
+        allowEnvOverrides: false, // Disable env overrides to test only YAML substitution
+      });
+
+      expect(config.azureMonitor.clientSecret).toBe('my-secret-token');
+
+      delete process.env['TEST_TOKEN'];
+    });
+
+    it('should use default value with env:VAR_NAME:default syntax', () => {
+      const configWithDefault = `
+azureMonitor:
+  workspaceId: "env:WORKSPACE_ID:default-workspace"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const defaultConfigPath = path.join(testConfigDir, 'default-config.yaml');
+      fs.writeFileSync(defaultConfigPath, configWithDefault);
+
+      const config = loadConfig({ configPath: defaultConfigPath });
+
+      expect(config.azureMonitor.workspaceId).toBe('default-workspace');
+    });
+
+    it('should prefer environment variable over default value', () => {
+      process.env['WORKSPACE_ID'] = 'env-workspace';
+
+      const configWithDefault = `
+azureMonitor:
+  workspaceId: "env:WORKSPACE_ID:default-workspace"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const defaultConfigPath = path.join(testConfigDir, 'prefer-env-config.yaml');
+      fs.writeFileSync(defaultConfigPath, configWithDefault);
+
+      const config = loadConfig({ configPath: defaultConfigPath });
+
+      expect(config.azureMonitor.workspaceId).toBe('env-workspace');
+
+      delete process.env['WORKSPACE_ID'];
+    });
+
+    it('should fail if required env var is not set and no default', () => {
+      const configWithMissingVar = `
+azureMonitor:
+  workspaceId: "env:MISSING_VAR"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const missingVarPath = path.join(testConfigDir, 'missing-var-config.yaml');
+      fs.writeFileSync(missingVarPath, configWithMissingVar);
+
+      expect(() => {
+        loadConfig({ configPath: missingVarPath });
+      }).toThrow('Required environment variable MISSING_VAR is not set');
+    });
+
+    it('should support env vars in arrays', () => {
+      process.env['LABEL_1'] = 'bug';
+      process.env['LABEL_2'] = 'automated';
+
+      const configWithEnvArray = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords:
+    - "env:LABEL_1"
+    - "error"
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels:
+    - "env:LABEL_1"
+    - "env:LABEL_2"
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const arrayConfigPath = path.join(testConfigDir, 'array-env-config.yaml');
+      fs.writeFileSync(arrayConfigPath, configWithEnvArray);
+
+      const config = loadConfig({ configPath: arrayConfigPath });
+
+      expect(config.github.defaultLabels).toContain('bug');
+      expect(config.github.defaultLabels).toContain('automated');
+      expect(config.failureDetection.errorKeywords).toContain('bug');
+
+      delete process.env['LABEL_1'];
+      delete process.env['LABEL_2'];
+    });
+
+    it('should support env vars in nested objects', () => {
+      process.env['TENANT_ID'] = '11111111-1111-1111-1111-111111111111';
+
+      const configWithNestedEnv = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "env:TENANT_ID"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const nestedConfigPath = path.join(testConfigDir, 'nested-env-config.yaml');
+      fs.writeFileSync(nestedConfigPath, configWithNestedEnv);
+
+      const config = loadConfig({
+        configPath: nestedConfigPath,
+        allowEnvOverrides: false, // Disable env overrides to test only YAML substitution
+      });
+
+      expect(config.azureMonitor.tenantId).toBe('11111111-1111-1111-1111-111111111111');
+
+      delete process.env['TENANT_ID'];
+    });
+
+    it('should log which variables were substituted', () => {
+      process.env['TEST_TOKEN'] = 'my-token';
+
+      const configWithEnvVar = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "env:TEST_TOKEN"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const logConfigPath = path.join(testConfigDir, 'log-env-config.yaml');
+      fs.writeFileSync(logConfigPath, configWithEnvVar);
+
+      const config = loadConfig({ configPath: logConfigPath, allowEnvOverrides: false });
+
+      expect(config.azureMonitor.clientSecret).toBe('my-token');
+
+      delete process.env['TEST_TOKEN'];
+    });
+
+    it('should log when default value is used', () => {
+      const configWithDefault = `
+azureMonitor:
+  workspaceId: "env:MISSING_WORKSPACE:default-value"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const logDefaultPath = path.join(testConfigDir, 'log-default-config.yaml');
+      fs.writeFileSync(logDefaultPath, configWithDefault);
+
+      const config = loadConfig({ configPath: logDefaultPath });
+
+      expect(config.azureMonitor.workspaceId).toBe('default-value');
+    });
+
+    it('should not log values for security', () => {
+      process.env['SECRET_VALUE'] = 'super-secret';
+
+      const configWithSecret = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "env:SECRET_VALUE"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const secretConfigPath = path.join(testConfigDir, 'secret-config.yaml');
+      fs.writeFileSync(secretConfigPath, configWithSecret);
+
+      const config = loadConfig({ configPath: secretConfigPath, allowEnvOverrides: false });
+
+      // Verify the secret was substituted correctly
+      expect(config.azureMonitor.clientSecret).toBe('super-secret');
+
+      delete process.env['SECRET_VALUE'];
+    });
+
+    it('should handle literal values without env: prefix', () => {
+      const configWithLiterals = `
+azureMonitor:
+  workspaceId: "literal-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "literal-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const literalConfigPath = path.join(testConfigDir, 'literal-config.yaml');
+      fs.writeFileSync(literalConfigPath, configWithLiterals);
+
+      const config = loadConfig({
+        configPath: literalConfigPath,
+        allowEnvOverrides: false, // Disable env overrides to test only YAML substitution
+      });
+
+      expect(config.azureMonitor.workspaceId).toBe('literal-workspace-id');
+      expect(config.azureMonitor.clientSecret).toBe('literal-secret');
+    });
+
+    it('should support all YAML data types', () => {
+      process.env['BATCH_SIZE'] = '2000';
+
+      const configWithTypes = `
+azureMonitor:
+  workspaceId: "test-workspace-id"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const typesConfigPath = path.join(testConfigDir, 'types-config.yaml');
+      fs.writeFileSync(typesConfigPath, configWithTypes);
+
+      const config = loadConfig({ configPath: typesConfigPath });
+
+      // Verify different types are preserved
+      expect(typeof config.logFetching.queryIntervalMinutes).toBe('number');
+      expect(typeof config.duplicateDetection.enabled).toBe('boolean');
+      expect(Array.isArray(config.github.defaultLabels)).toBe(true);
+      expect(typeof config.azureMonitor).toBe('object');
+
+      delete process.env['BATCH_SIZE'];
+    });
+
+    it('should handle default values with colons in them', () => {
+      const configWithColonDefault = `
+azureMonitor:
+  workspaceId: "env:WORKSPACE:http://default:8080"
+  tenantId: "12345678-1234-1234-1234-123456789012"
+  clientId: "87654321-4321-4321-4321-210987654321"
+  clientSecret: "test-secret"
+
+logFetching:
+  queryIntervalMinutes: 5
+  batchSize: 1000
+  lookbackMinutes: 60
+  maxRetries: 3
+  retryDelayMs: 5000
+  queryTimeoutMs: 30000
+
+failureDetection:
+  patterns:
+    - name: "TestError"
+      pattern: "error"
+      type: "error"
+      priority: 5
+      enabled: true
+  confidenceThreshold: 0.75
+  enableMlDetection: false
+  errorKeywords: ["error"]
+  failureLogLevels: ["Error"]
+
+github:
+  repository: "test-org/test-repo"
+  token: "ghp_test_token"
+  defaultLabels: ["bug"]
+  autoAssign: false
+
+duplicateDetection:
+  enabled: true
+  similarityThreshold: 0.85
+  timeWindowHours: 24
+  algorithm: "jaccard"
+  compareFields: ["message"]
+  enableFuzzyMatching: true
+
+scheduler:
+  enabled: true
+  cronExpression: "*/5 * * * *"
+  timezone: "UTC"
+  runOnStartup: true
+  maxConcurrentExecutions: 1
+  executionTimeoutMs: 300000
+
+logging:
+  level: "info"
+  format: "json"
+  enableConsole: true
+  enableFile: false
+
+environment: "development"
+`;
+
+      const colonConfigPath = path.join(testConfigDir, 'colon-default-config.yaml');
+      fs.writeFileSync(colonConfigPath, configWithColonDefault);
+
+      const config = loadConfig({ configPath: colonConfigPath });
+
+      // The default value after the second colon should be preserved with colons
+      expect(config.azureMonitor.workspaceId).toBe('http://default:8080');
+    });
+  });
+
   describe('Configuration Schema Validation', () => {
     it('should validate Azure Monitor configuration', () => {
       const config = loadConfig({ configPath: validConfigPath });
