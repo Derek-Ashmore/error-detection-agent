@@ -227,9 +227,20 @@ jobs:
               pull_number: context.issue.number,
             });
             
+            // Sanitize filenames to prevent issues with maliciously crafted names
+            function sanitizeFilename(filename) {
+              // Remove control characters, limit length, and escape backticks
+              let sanitized = filename.replace(/[\u0000-\u001F\u007F]/g, ''); // remove control chars
+              sanitized = sanitized.replace(/`/g, '\\`'); // escape backticks
+              if (sanitized.length > 200) {
+                sanitized = sanitized.slice(0, 200) + '...';
+              }
+              return sanitized;
+            }
+
             const changedFiles = files
               .filter(f => f.status !== 'removed')
-              .map(f => `- \`${f.filename}\``)
+              .map(f => `- \`${sanitizeFilename(f.filename)}\``)
               .slice(0, 20);
             
             if (changedFiles.length > 0) {
