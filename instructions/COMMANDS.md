@@ -109,3 +109,14 @@ npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/e
 
 - Please fix the linter errors in file instructions/error-linter-2025-12-12-16-40.txt
 - Please let me know if you need additional information.
+
+## Configuration System Task 2 Refraiming
+
+```
+npx claude-flow@alpha swarm "Please implement the configuration loader specification as documented in file openspec/changes/add-mvp-error-detection-agent/specs/config-loader/spec.md and openspec/changes/add-mvp-error-detection-agent/tasks.md. Mark tasks complete in openspec/changes/add-mvp-error-detection-agent/tasks.md once you're able to verify them. Code implemented needs to meet testing coverage requirements. Please let me know if you need additional information or capabilities." --claude
+```
+
+- Please implement the configuration loader specification as documented in file openspec/changes/add-mvp-error-detection-agent/specs/config-loader/spec.md and openspec/changes/add-mvp-error-detection-agent/tasks.md.
+- Mark tasks complete in openspec/changes/add-mvp-error-detection-agent/tasks.md once you're able to verify them.
+- Code implemented needs to meet testing coverage requirements.
+- Please let me know if you need additional information or capabilities.
