@@ -173,8 +173,7 @@ npx claude-flow@alpha swarm "When run with workflow pr-verify.yml, there are err
 - Please let me know if you need additional information.
 
 ```
-npx claude-flow@alpha swarm "An integration test failure is reported in file instructions/errors/error-test-failure-2025-12-14-16-17.txt. Any idea why the error is happening?
-- It is possible that no data is returned with the query. This is not an error. Please let me know if you need additional information." --claude
+npx claude-flow@alpha swarm "An integration test failure is reported in file instructions/errors/error-test-failure-2025-12-14-16-17.txt. Any idea why the error is happening? It is possible that no data is returned with the query. This is not an error. Please let me know if you need additional information." --claude
 ```
 
 - An integration test failure is reported in file instructions/errors/error-test-failure-2025-12-14-16-17.txt.  
