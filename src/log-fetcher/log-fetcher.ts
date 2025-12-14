@@ -134,11 +134,11 @@ export class LogFetcher {
     const kqlQuery = this.queryBuilder.buildLogQuery(timeRange);
 
     // Build timespan parameter (required)
-    // Azure SDK v1.3.3 requires duration in ISO 8601 format or object with start/end
-    const durationMinutes = Math.ceil(
-      (timeRange.endTime.getTime() - timeRange.startTime.getTime()) / (1000 * 60)
-    );
-    const queryTimespan = `P${durationMinutes}M` as unknown as QueryTimeInterval;
+    // Azure SDK requires QueryTimeInterval as an object with startTime and endTime
+    const queryTimespan: QueryTimeInterval = {
+      startTime: timeRange.startTime,
+      endTime: timeRange.endTime,
+    };
 
     // Query options
     const options: LogsQueryOptions = {
