@@ -214,7 +214,10 @@ export class RateLimitHandler {
 
     // Retryable HTTP status codes
     const retryableStatusCodes = [408, 500, 502, 503, 504];
-    if (azureError.statusCode !== undefined && retryableStatusCodes.includes(azureError.statusCode)) {
+    if (
+      azureError.statusCode !== undefined &&
+      retryableStatusCodes.includes(azureError.statusCode)
+    ) {
       return true;
     }
 

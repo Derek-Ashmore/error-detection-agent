@@ -27,7 +27,6 @@ describe('CircuitBreaker', () => {
     it('should wait 60 seconds before retry on 503', async () => {
       // Arrange
       const retryDelay = 60000; // 60 seconds
-      const _startTime = Date.now();
 
       // Act
       await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate wait (shortened for test)
@@ -297,12 +296,10 @@ describe('CircuitBreaker', () => {
     it('should differentiate between transient and persistent failures', () => {
       // Arrange
       const failureClassifier = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        isTransient: function (error: any) {
+        isTransient: function (error: { status: number }): boolean {
           return [408, 429, 503, 504].includes(error.status);
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        isPersistent: function (error: any) {
+        isPersistent: function (error: { status: number }): boolean {
           return [400, 401, 403, 404].includes(error.status);
         },
       };
@@ -466,7 +463,7 @@ describe('CircuitBreaker', () => {
   });
 
   describe('Integration with Error Handling', () => {
-    it('should coordinate with retry logic', async () => {
+    it('should coordinate with retry logic', () => {
       // Arrange
       const circuitBreaker = {
         state: 'closed',

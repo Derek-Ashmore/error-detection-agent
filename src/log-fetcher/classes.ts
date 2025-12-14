@@ -29,7 +29,6 @@ import type {
   RateLimitEvent,
   RateLimitState,
 } from './interfaces';
-
 import { CircuitBreakerState } from './interfaces';
 
 // ============================================================================

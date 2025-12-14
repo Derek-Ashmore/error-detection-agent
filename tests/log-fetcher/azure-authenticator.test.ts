@@ -58,9 +58,6 @@ describe('AzureAuthenticator', () => {
 
   describe('Scenario: Successful authentication with managed identity', () => {
     it('should authenticate using DefaultAzureCredential', async () => {
-      // Arrange
-      const _workspaceId = 'test-workspace-id';
-
       // Act
       const credential = new DefaultAzureCredential();
       new LogsQueryClient(credential);
@@ -68,7 +65,10 @@ describe('AzureAuthenticator', () => {
 
       // Assert
       expect(DefaultAzureCredential).toHaveBeenCalledTimes(1);
-      expect(mockDefaultCredential.getToken).toHaveBeenCalledWith('https://api.loganalytics.io/.default');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockDefaultCredential.getToken).toHaveBeenCalledWith(
+        'https://api.loganalytics.io/.default'
+      );
       expect(token).toBeDefined();
       expect(token.token).toBe('mock-token');
       expect(LogsQueryClient).toHaveBeenCalledWith(credential);
@@ -101,6 +101,7 @@ describe('AzureAuthenticator', () => {
       const secondCall = await credential.getToken('https://api.loganalytics.io/.default');
 
       // Assert
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockDefaultCredential.getToken).toHaveBeenCalledTimes(2);
       expect(secondCall.token).toBe('refreshed-token');
     });
@@ -167,14 +168,6 @@ describe('AzureAuthenticator', () => {
 
   describe('Scenario: Failed authentication', () => {
     it('should log error when credentials are invalid', async () => {
-      // Arrange
-      const _mockLogger = {
-        error: jest.fn(),
-        info: jest.fn(),
-        warn: jest.fn(),
-        debug: jest.fn(),
-      };
-
       mockDefaultCredential.getToken.mockRejectedValueOnce(
         new Error('Authentication failed: Invalid credentials')
       );
@@ -224,6 +217,7 @@ describe('AzureAuthenticator', () => {
 
       // Assert
       expect(result.token).toBe('success-token');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockDefaultCredential.getToken).toHaveBeenCalled();
     });
 

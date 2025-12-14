@@ -16,6 +16,25 @@ module.exports = {
     '**/__tests__/**/*.ts',
   ],
 
+  // Test path ignore patterns for integration tests
+  // Integration tests are run separately with different configuration
+  testPathIgnorePatterns: process.env.RUN_INTEGRATION_TESTS === 'false'
+    ? [
+        '/node_modules/',
+        '/dist/',
+        '/build/',
+        '/.swarm/',
+        '/.claude-flow/',
+        '/tests/**/integration/', // Skip integration tests in unit test runs
+      ]
+    : [
+        '/node_modules/',
+        '/dist/',
+        '/build/',
+        '/.swarm/',
+        '/.claude-flow/',
+      ],
+
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
@@ -68,17 +87,8 @@ module.exports = {
   // Verbose output
   verbose: true,
 
-  // Test timeout (5 seconds)
-  testTimeout: 5000,
-
-  // Ignore patterns
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/build/',
-    '/.swarm/',
-    '/.claude-flow/',
-  ],
+  // Test timeout (5 seconds for unit tests, 60 seconds for integration tests)
+  testTimeout: process.env.TEST_TYPE === 'integration' ? 60000 : 5000,
 
   // Coverage path ignore patterns
   coveragePathIgnorePatterns: [

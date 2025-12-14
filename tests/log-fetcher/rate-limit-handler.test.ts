@@ -9,7 +9,12 @@
  */
 
 describe('RateLimitHandler', () => {
-  let mockLogger: any;
+  let mockLogger: {
+    info: jest.Mock;
+    warn: jest.Mock;
+    error: jest.Mock;
+    debug: jest.Mock;
+  };
 
   beforeEach(() => {
     mockLogger = {
@@ -79,7 +84,7 @@ describe('RateLimitHandler', () => {
       };
 
       // Act
-      mockLogger.warn('Rate limit exceeded', rateLimitEvent);
+      mockLogger.warn('Rate limit exceeded', rateLimitEvent as Record<string, unknown>);
 
       // Assert
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -100,14 +105,19 @@ describe('RateLimitHandler', () => {
         .mockResolvedValueOnce({ status: 200, data: 'success' });
 
       // Act
-      const executeWithRetry = async () => {
+      const executeWithRetry = async (): Promise<{ status: number; data: string } | undefined> => {
         while (attemptCount < 3) {
           try {
             attemptCount++;
-            return await mockRequest();
-          } catch (error: any) {
-            if (error.status === 429) {
-              const retryAfter = parseInt(error.headers['retry-after'], 10) * 1000;
+            return (await mockRequest()) as { status: number; data: string };
+          } catch (error: unknown) {
+            const rateLimitError = error as {
+              status?: number;
+              headers?: { 'retry-after'?: string };
+            };
+            if (rateLimitError.status === 429) {
+              const retryAfter =
+                parseInt(rateLimitError.headers?.['retry-after'] ?? '0', 10) * 1000;
               await new Promise((resolve) => setTimeout(resolve, retryAfter));
             } else {
               throw error;
@@ -202,7 +212,7 @@ describe('RateLimitHandler', () => {
       expect(currentInterval).toBe(defaultInterval);
     });
 
-    it('should reset error counter on successful request', async () => {
+    it('should reset error counter on successful request', () => {
       // Arrange
       const rateLimitTracker = {
         consecutiveErrors: 3,
@@ -298,7 +308,10 @@ describe('RateLimitHandler', () => {
 
     it('should default to exponential backoff if retry-after missing', () => {
       // Arrange
-      const response = {
+      const response: {
+        status: number;
+        headers: Record<string, string | undefined>;
+      } = {
         status: 429,
         headers: {},
       };
@@ -307,7 +320,10 @@ describe('RateLimitHandler', () => {
 
       // Act
       const retryAfter = response.headers['retry-after'];
-      const delay = retryAfter ? parseInt(retryAfter, 10) * 1000 : baseDelay * Math.pow(2, attempt);
+      const delay =
+        retryAfter !== null && retryAfter !== undefined
+          ? parseInt(retryAfter, 10) * 1000
+          : baseDelay * Math.pow(2, attempt);
 
       // Assert
       expect(delay).toBe(4000); // 1000 * 2^2
@@ -367,13 +383,16 @@ describe('RateLimitHandler', () => {
   describe('Edge Cases', () => {
     it('should handle missing retry-after header gracefully', () => {
       // Arrange
-      const response = {
+      const response: {
+        status: number;
+        headers: Record<string, string | undefined>;
+      } = {
         status: 429,
         headers: {},
       };
 
       // Act
-      const retryAfter = response.headers['retry-after'] || '60';
+      const retryAfter = response.headers['retry-after'] ?? '60';
       const delay = parseInt(retryAfter, 10) * 1000;
 
       // Assert

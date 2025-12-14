@@ -343,12 +343,15 @@ describe('KQLQueryBuilder', () => {
       const startTime = new Date(now.getTime() - lookbackDays * 24 * 60 * 60 * 1000);
 
       // Act
-      const _query = `
+      // Query is not used in assertions, only time difference is validated
+      const query = `
         traces
         | where timestamp >= datetime('${startTime.toISOString()}')
       `.trim();
 
-      // Assert
+      // Assert - verify query is valid
+      expect(query).toContain('timestamp >=');
+
       const daysDiff = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
       expect(daysDiff).toBeCloseTo(30, 0);
     });

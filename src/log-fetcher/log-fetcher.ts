@@ -298,7 +298,7 @@ export class LogFetcher {
     let tables: LogsQuerySuccessfulResult['tables'];
 
     if (response.status === LogsQueryResultStatus.Success) {
-      tables = (response as LogsQuerySuccessfulResult).tables;
+      tables = response.tables;
     } else if (response.status === LogsQueryResultStatus.PartialFailure) {
       // For partial failures, use partialTables
       const partialResult = response as unknown as {
@@ -329,16 +329,16 @@ export class LogFetcher {
         (col: { name?: string; type?: string }) => col.name ?? 'unknown'
       ) ?? [];
 
-    return table.rows.map(
-      (row: (Date | string | number | Record<string, unknown> | boolean)[]) => {
-        const obj: Record<string, unknown> = {};
-        row.forEach((value: Date | string | number | Record<string, unknown> | boolean, index: number) => {
+    return table.rows.map((row: (Date | string | number | Record<string, unknown> | boolean)[]) => {
+      const obj: Record<string, unknown> = {};
+      row.forEach(
+        (value: Date | string | number | Record<string, unknown> | boolean, index: number) => {
           const columnName = columnNames[index] ?? `column${index}`;
           obj[columnName] = value;
-        });
-        return obj;
-      }
-    );
+        }
+      );
+      return obj;
+    });
   }
 
   /**
