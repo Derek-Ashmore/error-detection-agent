@@ -134,9 +134,12 @@ export class LogFetcher {
     const kqlQuery = this.queryBuilder.buildLogQuery(timeRange);
 
     // Build timespan parameter (required)
-    // Azure SDK requires QueryTimeInterval as an object with startTime and endTime
+    // Calculate duration in ISO8601 format and use with endTime
+    // Azure API prefers { duration, endTime } format over { startTime, endTime }
+    const durationMs = timeRange.endTime.getTime() - timeRange.startTime.getTime();
+    const durationMinutes = Math.floor(durationMs / (60 * 1000));
     const queryTimespan: QueryTimeInterval = {
-      startTime: timeRange.startTime,
+      duration: `PT${durationMinutes}M`,
       endTime: timeRange.endTime,
     };
 
