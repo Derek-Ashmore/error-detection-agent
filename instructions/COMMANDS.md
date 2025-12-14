@@ -158,7 +158,7 @@ npx claude-flow@alpha swarm "Please implement the log-fetcher specification as d
 > Verification Defects
 
 ```
-npx claude-flow@alpha swarm "Please fix the linter errors in file instructions/errors/error-linter-2025-12-13-05-50.txt. Please let me know if you need additional information." --claude
+npx claude-flow@alpha swarm "Please fix the linter, type check, and test coverage errors in file instructions/errors/error-general-2025-12-14-06-22.txt. Please let me know if you need additional information." --claude
 ```
 
 - Please fix the linter, type check, and test coverage errors in file instructions/errors/error-general-2025-12-14-06-22.txt.
