@@ -164,10 +164,19 @@ describe('LogEntryParser', () => {
       // Act
       const parsedEntry = {
         timestamp: new Date(rawLogEntry.timestamp),
-        severity: rawLogEntry.severityLevel || 'Information',
+        severity:
+          'severityLevel' in rawLogEntry && rawLogEntry.severityLevel !== undefined
+            ? rawLogEntry.severityLevel
+            : 'Information',
         message: rawLogEntry.message,
-        metadata: rawLogEntry.customDimensions || {},
-        operationName: rawLogEntry.operation_Name || 'Unknown',
+        metadata:
+          'customDimensions' in rawLogEntry && rawLogEntry.customDimensions !== undefined
+            ? rawLogEntry.customDimensions
+            : {},
+        operationName:
+          'operation_Name' in rawLogEntry && rawLogEntry.operation_Name !== undefined
+            ? rawLogEntry.operation_Name
+            : 'Unknown',
       };
 
       // Assert
@@ -191,9 +200,17 @@ describe('LogEntryParser', () => {
         const parsedEntry = {
           timestamp: new Date(rawLogEntry.timestamp),
           message: rawLogEntry.message,
-          severity: rawLogEntry['severityLevel'] || 'Information',
-          metadata: rawLogEntry['customDimensions'] || {},
+          severity:
+            'severityLevel' in rawLogEntry && rawLogEntry['severityLevel'] !== undefined
+              ? rawLogEntry['severityLevel']
+              : 'Information',
+          metadata:
+            'customDimensions' in rawLogEntry && rawLogEntry['customDimensions'] !== undefined
+              ? rawLogEntry['customDimensions']
+              : {},
         };
+        // Use the variable to avoid unused variable error
+        expect(parsedEntry).toBeDefined();
       }).not.toThrow();
     });
 
@@ -209,7 +226,7 @@ describe('LogEntryParser', () => {
       };
 
       // Act
-      if (!rawLogEntry['timestamp']) {
+      if (!('timestamp' in rawLogEntry) || rawLogEntry['timestamp'] === undefined) {
         mockLogger.warn('Malformed log entry: missing timestamp', { entry: rawLogEntry });
       }
 
@@ -232,9 +249,9 @@ describe('LogEntryParser', () => {
       // Act
       const parsedEntry = {
         timestamp: new Date(rawLogEntry.timestamp),
-        severity: rawLogEntry.severityLevel || 'Information',
+        severity: rawLogEntry.severityLevel ?? 'Information',
         message: rawLogEntry.message,
-        metadata: rawLogEntry.customDimensions || {},
+        metadata: rawLogEntry.customDimensions ?? {},
       };
 
       // Assert
@@ -398,9 +415,9 @@ describe('LogEntryParser', () => {
       const errorMatch = message.match(errorPattern);
       const hostMatch = message.match(hostPattern);
 
-      const errorCode = errorMatch ? errorMatch[1] : null;
-      const host = hostMatch ? hostMatch[1] : null;
-      const port = hostMatch ? parseInt(hostMatch[2], 10) : null;
+      const errorCode = errorMatch?.[1] !== undefined ? errorMatch[1] : null;
+      const host = hostMatch?.[1] !== undefined ? hostMatch[1] : null;
+      const port = hostMatch?.[2] !== undefined ? parseInt(hostMatch[2], 10) : null;
 
       // Assert
       expect(errorCode).toBe('ECONNREFUSED');
@@ -439,7 +456,7 @@ describe('LogEntryParser', () => {
       // Act
       const parsedEntry = {
         timestamp: new Date(rawLogEntry.timestamp),
-        message: rawLogEntry.message || '[Empty message]',
+        message: rawLogEntry.message !== '' ? rawLogEntry.message : '[Empty message]',
       };
 
       // Assert
@@ -503,7 +520,7 @@ describe('LogEntryParser', () => {
       }).toThrow();
 
       // Safe handling
-      const safeStringify = (obj: any) => {
+      const safeStringify = (obj: unknown): string => {
         try {
           return JSON.stringify(obj);
         } catch (error) {

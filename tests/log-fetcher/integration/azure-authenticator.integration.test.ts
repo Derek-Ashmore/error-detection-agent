@@ -7,10 +7,15 @@
 import { AzureAuthenticator } from '../../../src/log-fetcher/azure-authenticator';
 
 // Skip these tests if Azure credentials are not available
-const describeIfAzure = process.env.AZURE_TENANT_ID ? describe : describe.skip;
+const describeIfAzure =
+  process.env['AZURE_TENANT_ID'] !== undefined &&
+  process.env['AZURE_TENANT_ID'] !== null &&
+  process.env['AZURE_TENANT_ID'] !== ''
+    ? describe
+    : describe.skip;
 
 describeIfAzure('AzureAuthenticator Integration Tests', () => {
-  const workspaceId = process.env.AZURE_WORKSPACE_ID || 'test-workspace-id';
+  const workspaceId = process.env['AZURE_WORKSPACE_ID'] ?? 'test-workspace-id';
 
   describe('Real Azure Authentication', () => {
     it('should authenticate with service principal credentials', async () => {
@@ -22,13 +27,18 @@ describeIfAzure('AzureAuthenticator Integration Tests', () => {
 
       // Assert
       expect(credential).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(credential.getToken).toBeDefined();
 
       // Verify we can get a token
       const token = await credential.getToken('https://api.loganalytics.io/.default');
-      expect(token).toBeDefined();
-      expect(token.token).toBeTruthy();
-      expect(token.expiresOnTimestamp).toBeGreaterThan(Date.now());
+      expect(token).not.toBeNull();
+      if (token !== null) {
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(token.token).not.toBe('');
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(token.expiresOnTimestamp).toBeGreaterThan(Date.now());
+      }
     }, 30000); // 30 second timeout for network calls
 
     it('should cache credentials after first authentication', async () => {

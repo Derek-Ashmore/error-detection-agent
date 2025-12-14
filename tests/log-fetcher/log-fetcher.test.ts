@@ -8,7 +8,14 @@
  */
 
 import { DefaultAzureCredential } from '@azure/identity';
-import { LogsQueryClient, LogsQueryResult, LogsTable } from '@azure/monitor-query';
+import {
+  LogsQueryClient,
+  LogsQueryResult,
+  LogsQueryResultStatus,
+  LogsQuerySuccessfulResult,
+  LogsQueryPartialResult,
+  LogsTable,
+} from '@azure/monitor-query';
 
 // Mock Azure SDK
 jest.mock('@azure/identity');
@@ -57,7 +64,7 @@ describe('LogFetcherService', () => {
 
       const mockTable: LogsTable = {
         name: 'PrimaryResult',
-        columns: [
+        columnDescriptors: [
           { name: 'timestamp', type: 'datetime' },
           { name: 'severityLevel', type: 'string' },
           { name: 'message', type: 'string' },
@@ -68,9 +75,9 @@ describe('LogFetcherService', () => {
         ],
       };
 
-      const mockResult: LogsQueryResult = {
+      const mockResult: LogsQuerySuccessfulResult = {
         tables: [mockTable],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -79,17 +86,18 @@ describe('LogFetcherService', () => {
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace(workspaceId, query, {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
 
       // Assert
-      expect(result.tables).toHaveLength(1);
-      expect(result.tables[0].rows).toHaveLength(2);
+      expect((result as LogsQuerySuccessfulResult).tables).toHaveLength(1);
+      expect((result as LogsQuerySuccessfulResult).tables[0]?.rows).toHaveLength(2);
       expect(result.status).toBe('Success');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogsQueryClient.queryWorkspace).toHaveBeenCalledWith(
         workspaceId,
         query,
-        expect.objectContaining({ duration: { hours: 1 } })
+        expect.objectContaining({ duration: 'PT1H' })
       );
     });
 
@@ -97,7 +105,7 @@ describe('LogFetcherService', () => {
       // Arrange
       const mockTable: LogsTable = {
         name: 'PrimaryResult',
-        columns: [
+        columnDescriptors: [
           { name: 'timestamp', type: 'datetime' },
           { name: 'severityLevel', type: 'string' },
           { name: 'message', type: 'string' },
@@ -113,9 +121,9 @@ describe('LogFetcherService', () => {
         ],
       };
 
-      const mockResult: LogsQueryResult = {
+      const mockResult: LogsQuerySuccessfulResult = {
         tables: [mockTable],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -124,19 +132,21 @@ describe('LogFetcherService', () => {
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
 
-      const logEntries = result.tables[0].rows.map((row) => ({
-        timestamp: row[0],
-        severityLevel: row[1],
-        message: row[2],
-        operationName: row[3],
-      }));
+      const logEntries = (result as LogsQuerySuccessfulResult).tables[0]?.rows.map(
+        (row: (Date | string | number | Record<string, unknown> | boolean)[]) => ({
+          timestamp: row[0],
+          severityLevel: row[1],
+          message: row[2],
+          operationName: row[3],
+        })
+      );
 
       // Assert
       expect(logEntries).toHaveLength(1);
-      expect(logEntries[0]).toEqual({
+      expect(logEntries?.[0]).toEqual({
         timestamp: new Date('2025-12-13T10:00:00Z'),
         severityLevel: 'Error',
         message: 'Database connection failed',
@@ -147,15 +157,15 @@ describe('LogFetcherService', () => {
     it('should track query execution metrics', async () => {
       // Arrange
       const startTime = Date.now();
-      const mockResult: LogsQueryResult = {
+      const mockResult: LogsQuerySuccessfulResult = {
         tables: [
           {
             name: 'PrimaryResult',
-            columns: [{ name: 'timestamp', type: 'datetime' }],
+            columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
             rows: [[new Date()]],
           },
         ],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -164,13 +174,13 @@ describe('LogFetcherService', () => {
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
       const duration = Date.now() - startTime;
 
       const metrics = {
         duration,
-        entryCount: result.tables[0].rows.length,
+        entryCount: (result as LogsQuerySuccessfulResult).tables[0]?.rows.length ?? 0,
         status: result.status,
       };
 
@@ -192,25 +202,26 @@ describe('LogFetcherService', () => {
       const client = new LogsQueryClient(credential);
 
       await expect(
-        client.queryWorkspace('workspace-id', 'invalid query', { duration: { hours: 1 } })
+        client.queryWorkspace('workspace-id', 'invalid query', { duration: 'PT1H' })
       ).rejects.toThrow(errorMessage);
     });
 
     it('should handle partial query results', async () => {
       // Arrange
-      const mockResult: LogsQueryResult = {
-        tables: [
+      const mockResult: LogsQueryPartialResult = {
+        partialTables: [
           {
             name: 'PrimaryResult',
-            columns: [{ name: 'timestamp', type: 'datetime' }],
+            columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
             rows: [[new Date()]],
           },
         ],
-        status: 'PartialError' as any,
+        status: LogsQueryResultStatus.PartialFailure,
         partialError: {
           code: 'PartialError',
           message: 'Query partially failed',
-        } as any,
+          name: 'PartialError',
+        },
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -219,13 +230,13 @@ describe('LogFetcherService', () => {
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
 
       // Assert
-      expect(result.status).toBe('PartialError');
-      expect(result.partialError).toBeDefined();
-      expect(result.tables[0].rows).toHaveLength(1);
+      expect(result.status).toBe('PartialFailure');
+      expect((result as LogsQueryPartialResult).partialError).toBeDefined();
+      expect((result as LogsQueryPartialResult).partialTables[0]?.rows).toHaveLength(1);
     });
 
     it('should implement retry logic for transient failures', async () => {
@@ -240,11 +251,11 @@ describe('LogFetcherService', () => {
           tables: [
             {
               name: 'PrimaryResult',
-              columns: [{ name: 'timestamp', type: 'datetime' }],
+              columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
               rows: [[new Date()]],
             },
           ],
-          status: 'Success' as any,
+          status: LogsQueryResultStatus.Success,
         });
 
       // Act
@@ -255,7 +266,7 @@ describe('LogFetcherService', () => {
             const credential = new DefaultAzureCredential();
             const client = new LogsQueryClient(credential);
             return await client.queryWorkspace('workspace-id', 'query', {
-              duration: { hours: 1 },
+              duration: 'PT1H',
             });
           } catch (error) {
             if (attemptCount >= maxRetries) {
@@ -278,15 +289,15 @@ describe('LogFetcherService', () => {
   describe('Observability', () => {
     it('should log query execution metrics on success', async () => {
       // Arrange
-      const mockResult: LogsQueryResult = {
+      const mockResult: LogsQuerySuccessfulResult = {
         tables: [
           {
             name: 'PrimaryResult',
-            columns: [{ name: 'timestamp', type: 'datetime' }],
+            columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
             rows: Array(50).fill([new Date()]),
           },
         ],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -296,14 +307,15 @@ describe('LogFetcherService', () => {
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
       const duration = Date.now() - startTime;
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       mockLogger.info({
         message: 'Query completed successfully',
         duration,
-        entryCount: result.tables[0].rows.length,
+        entryCount: (result as LogsQuerySuccessfulResult).tables[0]?.rows.length ?? 0,
         requestId: 'test-request-id',
       });
 
@@ -327,8 +339,9 @@ describe('LogFetcherService', () => {
       try {
         const credential = new DefaultAzureCredential();
         const client = new LogsQueryClient(credential);
-        await client.queryWorkspace('workspace-id', queryText, { duration: { hours: 1 } });
+        await client.queryWorkspace('workspace-id', queryText, { duration: 'PT1H' });
       } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         mockLogger.error({
           message: 'Query failed',
           error: (error as Error).message,
@@ -355,15 +368,15 @@ describe('LogFetcherService', () => {
         incrementFailureCounter: jest.fn(),
       };
 
-      const mockResult: LogsQueryResult = {
+      const mockResult: LogsQuerySuccessfulResult = {
         tables: [
           {
             name: 'PrimaryResult',
-            columns: [{ name: 'timestamp', type: 'datetime' }],
+            columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
             rows: [[new Date()]],
           },
         ],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       };
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce(mockResult);
@@ -372,7 +385,7 @@ describe('LogFetcherService', () => {
       const startTime = Date.now();
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
-      await client.queryWorkspace('workspace-id', 'query', { duration: { hours: 1 } });
+      await client.queryWorkspace('workspace-id', 'query', { duration: 'PT1H' });
       const duration = Date.now() - startTime;
 
       metricsCollector.recordQueryDuration(duration);
@@ -389,7 +402,7 @@ describe('LogFetcherService', () => {
       // Arrange
       const mockTable: LogsTable = {
         name: 'PrimaryResult',
-        columns: [
+        columnDescriptors: [
           { name: 'timestamp', type: 'datetime' },
           { name: 'severityLevel', type: 'string' },
           { name: 'message', type: 'string' },
@@ -402,28 +415,37 @@ describe('LogFetcherService', () => {
 
       mockLogsQueryClient.queryWorkspace.mockResolvedValueOnce({
         tables: [mockTable],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       });
 
       // Act
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
 
-      const parsedEntries = result.tables[0].rows.map((row) => ({
-        timestamp: row[0],
-        severity: row[1],
-        message: row[2],
-      }));
+      const parsedEntries =
+        (result as LogsQuerySuccessfulResult).tables[0]?.rows.map(
+          (row: (Date | string | number | Record<string, unknown> | boolean)[]) => ({
+            timestamp: row[0],
+            severity: row[1],
+            message: row[2],
+          })
+        ) ?? [];
 
-      const errorEntries = parsedEntries.filter((entry) => entry.severity === 'Error');
+      const errorEntries = parsedEntries.filter(
+        (entry: {
+          timestamp: Date | string | number | Record<string, unknown> | boolean | undefined;
+          severity: Date | string | number | Record<string, unknown> | boolean | undefined;
+          message: Date | string | number | Record<string, unknown> | boolean | undefined;
+        }) => entry.severity === 'Error'
+      );
 
       // Assert
       expect(parsedEntries).toHaveLength(2);
       expect(errorEntries).toHaveLength(2);
-      expect(errorEntries[0].message).toBe('Connection timeout');
+      expect(errorEntries[0]?.message).toBe('Connection timeout');
     });
 
     it('should coordinate with rate limiter and circuit breaker', async () => {
@@ -443,26 +465,26 @@ describe('LogFetcherService', () => {
         tables: [
           {
             name: 'PrimaryResult',
-            columns: [{ name: 'timestamp', type: 'datetime' }],
+            columnDescriptors: [{ name: 'timestamp', type: 'datetime' }],
             rows: [[new Date()]],
           },
         ],
-        status: 'Success' as any,
+        status: LogsQueryResultStatus.Success,
       });
 
       // Act
-      if (circuitBreaker.isOpen()) {
+      if (circuitBreaker.isOpen() === true) {
         throw new Error('Circuit breaker is open');
       }
 
-      if (!rateLimiter.canProceed()) {
+      if (rateLimiter.canProceed() !== true) {
         throw new Error('Rate limit exceeded');
       }
 
       const credential = new DefaultAzureCredential();
       const client = new LogsQueryClient(credential);
       const result = await client.queryWorkspace('workspace-id', 'query', {
-        duration: { hours: 1 },
+        duration: 'PT1H',
       });
 
       rateLimiter.recordRequest();

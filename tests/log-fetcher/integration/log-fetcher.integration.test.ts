@@ -8,11 +8,16 @@ import { LogFetcher } from '../../../src/log-fetcher/log-fetcher';
 import type { LogFetcherConfig } from '../../../src/log-fetcher/types';
 
 // Skip these tests if Azure credentials are not available
-const describeIfAzure = process.env.AZURE_TENANT_ID ? describe : describe.skip;
+const describeIfAzure =
+  process.env['AZURE_TENANT_ID'] !== undefined &&
+  process.env['AZURE_TENANT_ID'] !== null &&
+  process.env['AZURE_TENANT_ID'] !== ''
+    ? describe
+    : describe.skip;
 
 describeIfAzure('LogFetcher Integration Tests', () => {
   let logFetcher: LogFetcher;
-  const workspaceId = process.env.AZURE_WORKSPACE_ID || 'test-workspace-id';
+  const workspaceId = process.env['AZURE_WORKSPACE_ID'] ?? 'test-workspace-id';
 
   const testConfig: LogFetcherConfig = {
     workspaceId,
@@ -69,18 +74,21 @@ describeIfAzure('LogFetcher Integration Tests', () => {
 
       if (result.entries.length > 0) {
         const entry = result.entries[0];
-        expect(entry.timestamp).toBeInstanceOf(Date);
-        expect(typeof entry.severity).toBe('string');
-        expect(typeof entry.message).toBe('string');
+        if (entry !== undefined) {
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(entry.timestamp).toBeInstanceOf(Date);
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(typeof entry.severity).toBe('string');
+          // eslint-disable-next-line jest/no-conditional-expect
+          expect(typeof entry.message).toBe('string');
+        }
       }
     }, 60000);
 
     it('should throw error if not initialized', async () => {
       const uninitializedFetcher = new LogFetcher(testConfig);
 
-      await expect(uninitializedFetcher.fetchLogs()).rejects.toThrow(
-        'Log fetcher not initialized'
-      );
+      await expect(uninitializedFetcher.fetchLogs()).rejects.toThrow('Log fetcher not initialized');
     });
   });
 
@@ -89,7 +97,7 @@ describeIfAzure('LogFetcher Integration Tests', () => {
       await logFetcher.initialize();
     }, 30000);
 
-    it('should provide circuit breaker statistics', async () => {
+    it('should provide circuit breaker statistics', () => {
       const stats = logFetcher.getCircuitBreakerStats();
 
       expect(stats).toBeDefined();

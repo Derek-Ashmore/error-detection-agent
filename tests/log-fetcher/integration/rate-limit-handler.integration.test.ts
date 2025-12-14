@@ -56,9 +56,7 @@ describe('RateLimitHandler Integration Tests', () => {
         return Promise.reject(error);
       });
 
-      await expect(rateLimitHandler.executeWithRetry(mockFn)).rejects.toThrow(
-        'Max retries'
-      );
+      await expect(rateLimitHandler.executeWithRetry(mockFn)).rejects.toThrow('Max retries');
       expect(mockFn).toHaveBeenCalledTimes(testConfig.maxRetries + 1);
     }, 10000);
 
@@ -81,8 +79,14 @@ describe('RateLimitHandler Integration Tests', () => {
 
       expect(timestamps.length).toBe(3);
 
-      const delay1 = timestamps[1] - timestamps[0];
-      const delay2 = timestamps[2] - timestamps[1];
+      const delay1 =
+        timestamps[1] !== undefined && timestamps[0] !== undefined
+          ? timestamps[1] - timestamps[0]
+          : 0;
+      const delay2 =
+        timestamps[2] !== undefined && timestamps[1] !== undefined
+          ? timestamps[2] - timestamps[1]
+          : 0;
 
       expect(delay1).toBeGreaterThanOrEqual(testConfig.initialDelayMs * 0.8);
       expect(delay2).toBeGreaterThanOrEqual(delay1 * 1.5);
@@ -178,9 +182,7 @@ describe('RateLimitHandler Integration Tests', () => {
         return Promise.reject(error);
       });
 
-      await expect(rateLimitHandler.executeWithRetry(mockFn)).rejects.toThrow(
-        'Not Found'
-      );
+      await expect(rateLimitHandler.executeWithRetry(mockFn)).rejects.toThrow('Not Found');
       expect(mockFn).toHaveBeenCalledTimes(1);
     });
   });

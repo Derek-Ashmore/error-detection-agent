@@ -165,7 +165,9 @@ describe('KqlQueryBuilder Integration Tests', () => {
         endTime: new Date('2024-12-31T23:59:59.999Z'), // > 30 days
       };
 
-      expect(() => queryBuilder.buildLogQuery(timeRange)).toThrow('Time range cannot exceed 30 days');
+      expect(() => queryBuilder.buildLogQuery(timeRange)).toThrow(
+        'Time range cannot exceed 30 days'
+      );
     });
   });
 

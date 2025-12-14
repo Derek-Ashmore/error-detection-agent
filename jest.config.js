@@ -58,8 +58,8 @@ module.exports = {
 
   // Coverage configuration - >90% threshold as per requirements
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
+  coverageDirectory: process.env.TEST_TYPE === 'integration' ? 'coverage/integration' : 'coverage/unit',
+  coverageReporters: ['text', 'lcov', 'html', 'json-summary', 'json'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',

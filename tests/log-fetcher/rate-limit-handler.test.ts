@@ -105,7 +105,7 @@ describe('RateLimitHandler', () => {
         .mockResolvedValueOnce({ status: 200, data: 'success' });
 
       // Act
-      const executeWithRetry = async (): Promise<{ status: number; data: string } | undefined> => {
+      const executeWithRetry = async (): Promise<{ status: number; data: string }> => {
         while (attemptCount < 3) {
           try {
             attemptCount++;
@@ -124,6 +124,7 @@ describe('RateLimitHandler', () => {
             }
           }
         }
+        throw new Error('Max retries exceeded');
       };
 
       const result = await executeWithRetry();
@@ -247,7 +248,7 @@ describe('RateLimitHandler', () => {
 
       // Assert
       expect(delays).toEqual([1000, 2000, 4000, 8000, 16000]);
-      expect(delays[4]).toBeGreaterThan(delays[3]);
+      expect(delays[4] ?? 0).toBeGreaterThan(delays[3] ?? 0);
     });
 
     it('should cap maximum backoff delay', () => {
