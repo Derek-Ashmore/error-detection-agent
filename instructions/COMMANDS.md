@@ -163,3 +163,11 @@ npx claude-flow@alpha swarm "Please fix the linter, type check, and test coverag
 
 - Please fix the linter, type check, and test coverage errors in file instructions/errors/error-general-2025-12-14-06-22.txt.
 - Please let me know if you need additional information.
+
+```
+npx claude-flow@alpha swarm "When run with workflow pr-verify.yml, there are errors in file instructions/errors/error-general-2025-12-14-14-27.txt.  Your local run shows no errors. Is there a reason for this?  Can we fix it? Is there a way to consolidate the unit and integration test runs so that I see a consolidated coverage report? Please let me know if you need additional information." --claude
+```
+
+- When run with workflow pr-verify.yml, there are errors in file instructions/errors/error-general-2025-12-14-14-27.txt.  Your local run shows no errors. Is there a reason for this?  Can we fix it?
+- Is there a way to consolidate the unit and integration test runs so that I see a consolidated coverage report?
+- Please let me know if you need additional information.
