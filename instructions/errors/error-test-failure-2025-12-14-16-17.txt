@@ -1,0 +1,14 @@
+LogFetcher Integration Tests › Log Fetching › should fetch logs from Azure Application Insights
+
+    Failed to fetch logs: The request had some invalid properties
+
+      107 |       }
+      108 |
+    > 109 |       throw new Error(`Failed to fetch logs: ${errorMessage}`);
+          |             ^
+      110 |     }
+      111 |
+      112 |     const durationMs = Date.now() - startTime;
+
+      at LogFetcher.fetchLogs (src/log-fetcher/log-fetcher.ts:109:13)
+      at Object.<anonymous> (tests/log-fetcher/integration/log-fetcher.integration.test.ts:66:22)
