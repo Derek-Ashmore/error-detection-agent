@@ -44,26 +44,76 @@ jobs:
 
       - name: Run linting
         id: lint
-        run: npm run lint 2>&1 | tee lint-errors.txt
+        run: |
+          npm run lint 2>&1 | tee lint-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "lint_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "lint_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
 
       - name: Run type checking
         id: typecheck
-        run: npm run typecheck 2>&1 | tee typecheck-errors.txt
+        run: |
+          npm run typecheck 2>&1 | tee typecheck-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "typecheck_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "typecheck_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
 
-      - name: Run tests with coverage
+      - name: Run unit tests with coverage
         id: test
-        run: npm test -- --coverage --ci --maxWorkers=2 2>&1 | tee test-errors.txt
+        run: |
+          npm run test:ci 2>&1 | tee test-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "test_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "test_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
         env:
           NODE_ENV: test
 
-      - name: Upload coverage to Codecov
+      - name: Run integration tests with coverage
+        id: integration_test
+        run: |
+          npm run test:integration:ci 2>&1 | tee integration-test-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "integration_test_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "integration_test_failed=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+        env:
+          NODE_ENV: test
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_WORKSPACE_ID: ${{ secrets.AZURE_WORKSPACE_ID }}
+
+      - name: Merge coverage reports
+        if: always()
+        run: |
+          # Install istanbul tools if coverage files exist
+          if [ -f coverage/unit/coverage-final.json ] && [ -f coverage/integration/coverage-final.json ]; then
+            npm install --no-save istanbul-lib-coverage istanbul-api
+            npm run test:coverage:merge || echo "Coverage merge failed, using unit coverage only"
+          elif [ -f coverage/unit/coverage-final.json ]; then
+            mkdir -p coverage/merged
+            cp coverage/unit/* coverage/merged/ || true
+          fi
+        continue-on-error: true
+
+      - name: Upload merged coverage to Codecov
         uses: codecov/codecov-action@v4
+        if: always()
         with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
+          files: ./coverage/merged/coverage-final.json
+          flags: merged
           name: pr-${{ github.event.pull_request.number }}
           fail_ci_if_error: false
         env:
@@ -79,15 +129,32 @@ jobs:
             let coverageComment = '## Coverage Report\n\n';
 
             try {
-              const summary = JSON.parse(fs.readFileSync('./coverage/coverage-summary.json', 'utf8'));
-              const total = summary.total;
+              // Try merged coverage first, fall back to unit coverage
+              let summaryPath = './coverage/merged/coverage-summary.json';
+              if (!fs.existsSync(summaryPath)) {
+                summaryPath = './coverage/unit/coverage-summary.json';
+              }
 
-              coverageComment += '| Metric | Coverage |\n';
-              coverageComment += '|--------|----------|\n';
-              coverageComment += `| Lines | ${total.lines.pct}% |\n`;
-              coverageComment += `| Statements | ${total.statements.pct}% |\n`;
-              coverageComment += `| Functions | ${total.functions.pct}% |\n`;
-              coverageComment += `| Branches | ${total.branches.pct}% |\n`;
+              if (fs.existsSync(summaryPath)) {
+                const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+                const total = summary.total;
+
+                coverageComment += '| Metric | Coverage |\n';
+                coverageComment += '|--------|----------|\n';
+                coverageComment += `| Lines | ${total.lines.pct}% |\n`;
+                coverageComment += `| Statements | ${total.statements.pct}% |\n`;
+                coverageComment += `| Functions | ${total.functions.pct}% |\n`;
+                coverageComment += `| Branches | ${total.branches.pct}% |\n`;
+
+                // Add note about coverage type
+                if (summaryPath.includes('merged')) {
+                  coverageComment += '\n*Includes both unit and integration tests*';
+                } else {
+                  coverageComment += '\n*Unit tests only (integration coverage not available)*';
+                }
+              } else {
+                coverageComment += 'Coverage report not available.\n';
+              }
             } catch (error) {
               coverageComment += 'Coverage report not available.\n';
             }
@@ -126,19 +193,27 @@ jobs:
         with:
           name: test-results
           path: |
-            coverage/
+            coverage/unit/
+            coverage/integration/
+            coverage/merged/
             test-results/
           retention-days: 30
 
       - name: Check build
         id: build
-        run: npm run build 2>&1 | tee build-errors.txt
+        run: |
+          npm run build 2>&1 | tee build-errors.txt || true
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "build_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_failed=false" >> $GITHUB_OUTPUT
+          fi
         continue-on-error: true
         env:
           NODE_ENV: production
 
       - name: Capture error details
-        if: failure() || steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        if: always() && (steps.lint.outputs.lint_failed == 'true' || steps.typecheck.outputs.typecheck_failed == 'true' || steps.test.outputs.test_failed == 'true' || steps.integration_test.outputs.integration_test_failed == 'true' || steps.build.outputs.build_failed == 'true')
         run: |
           mkdir -p error-reports
           {
@@ -147,7 +222,8 @@ jobs:
             echo "## Summary"
             echo "- Linting: ${{ steps.lint.outcome }}"
             echo "- Type Checking: ${{ steps.typecheck.outcome }}"
-            echo "- Tests: ${{ steps.test.outcome }}"
+            echo "- Unit Tests: ${{ steps.test.outcome }}"
+            echo "- Integration Tests: ${{ steps.integration_test.outcome }}"
             echo "- Build: ${{ steps.build.outcome }}"
             echo ""
           } > error-reports/summary.md
@@ -174,9 +250,19 @@ jobs:
           
           if [ -f test-errors.txt ] && [ -s test-errors.txt ]; then
             {
-              echo "## Test Errors"
+              echo "## Unit Test Errors"
               echo "\`\`\`"
               cat test-errors.txt
+              echo "\`\`\`"
+              echo ""
+            } >> error-reports/summary.md
+          fi
+
+          if [ -f integration-test-errors.txt ] && [ -s integration-test-errors.txt ]; then
+            {
+              echo "## Integration Test Errors"
+              echo "\`\`\`"
+              cat integration-test-errors.txt
               echo "\`\`\`"
               echo ""
             } >> error-reports/summary.md
@@ -239,8 +325,9 @@ jobs:
             }
 
       - name: Archive error reports
-        if: failure() || steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        if: always() && (steps.lint.outputs.lint_failed == 'true' || steps.typecheck.outputs.typecheck_failed == 'true' || steps.test.outputs.test_failed == 'true' || steps.build.outputs.build_failed == 'true')
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: error-reports
           path: |
@@ -248,7 +335,9 @@ jobs:
             lint-errors.txt
             typecheck-errors.txt
             test-errors.txt
+            build-errors.txt
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
@@ -258,7 +347,7 @@ jobs:
           retention-days: 7
 
       - name: Fail workflow if errors occurred
-        if: steps.lint.outcome == 'failure' || steps.typecheck.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        if: always()
         run: |
           echo "❌ PR verification failed. Check the PR comments for error details."
           echo "::error::PR verification failed. Check the PR comments for error details."

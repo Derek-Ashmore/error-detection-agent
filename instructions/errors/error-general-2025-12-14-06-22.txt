@@ -1,0 +1,182 @@
+# Linter Errors
+
+/home/runner/work/error-detection-agent/error-detection-agent/src/log-fetcher/classes.ts
+Error:   14:1  error  There should be no empty line within import group  import/order
+
+/home/runner/work/error-detection-agent/error-detection-agent/src/log-fetcher/log-fetcher.ts
+Error:   301:17  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
+Error:   332:27  error  Delete `⏎······`                                                                   prettier/prettier
+Error:   334:7   error  Delete `··`                                                                        prettier/prettier
+Error:   335:7   error  Replace `··row.forEach(` with `row.forEach(⏎········`                              prettier/prettier
+Error:   338:10  error  Insert `⏎······`                                                                   prettier/prettier
+Error:   339:1   error  Delete `··`                                                                        prettier/prettier
+Error:   340:5   error  Replace `··}⏎····` with `}`                                                        prettier/prettier
+
+/home/runner/work/error-detection-agent/error-detection-agent/src/log-fetcher/rate-limit-handler.ts
+Error:   217:9  error  Replace `azureError.statusCode·!==·undefined·&&·retryableStatusCodes.includes(azureError.statusCode)` with `⏎······azureError.statusCode·!==·undefined·&&⏎······retryableStatusCodes.includes(azureError.statusCode)⏎····`  prettier/prettier
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/log-fetcher/azure-authenticator.test.ts
+   71:14  error  Avoid referencing unbound methods which may cause unintentional scoping of `this`.
+If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead  @typescript-eslint/unbound-method
+Error:    71:67  error  Replace `'https://api.loganalytics.io/.default'` with `⏎········'https://api.loganalytics.io/.default'⏎······`                                                                                                  prettier/prettier
+  104:14  error  Avoid referencing unbound methods which may cause unintentional scoping of `this`.
+If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead  @typescript-eslint/unbound-method
+  227:14  error  Avoid referencing unbound methods which may cause unintentional scoping of `this`.
+If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead  @typescript-eslint/unbound-method
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/log-fetcher/circuit-breaker.test.ts
+Error:   302:48  error  Unsafe argument of type `any` assigned to a parameter of type `number`  @typescript-eslint/no-unsafe-argument
+Error:   306:48  error  Unsafe argument of type `any` assigned to a parameter of type `number`  @typescript-eslint/no-unsafe-argument
+Error:   469:55  error  Async arrow function has no 'await' expression                          @typescript-eslint/require-await
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/log-fetcher/log-entry-parser.test.ts
+Error:    58:24  error  Replace `·errorCodeMatch·!==·null·&&·errorCodeMatch·!==·undefined·?·errorCodeMatch[1]` with `⏎········errorCodeMatch·!==·null·&&·errorCodeMatch·!==·undefined⏎··········?·errorCodeMatch[1]⏎·········`  prettier/prettier
+Error:    95:29  error  Insert `⏎·······`                                                                                                                                                                                       prettier/prettier
+Error:    96:1   error  Insert `··`                                                                                                                                                                                             prettier/prettier
+Error:    97:13  error  Insert `··`                                                                                                                                                                                             prettier/prettier
+Error:    98:1   error  Insert `··`                                                                                                                                                                                             prettier/prettier
+Error:    99:1   error  Replace `············` with `··············`                                                                                                                                                            prettier/prettier
+Error:   100:11  error  Insert `··`                                                                                                                                                                                             prettier/prettier
+Error:   101:1   error  Insert `··`                                                                                                                                                                                             prettier/prettier
+Error:   163:19  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   165:19  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   166:24  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   187:15  error  'parsedEntry' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                  @typescript-eslint/no-unused-vars
+Error:   190:21  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   191:21  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   208:12  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                    @typescript-eslint/strict-boolean-expressions
+Error:   231:19  error  Unexpected nullish value in conditional. The condition is always false                                                                                                                                  @typescript-eslint/strict-boolean-expressions
+Error:   231:45  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator                                                                                               @typescript-eslint/prefer-nullish-coalescing
+Error:   233:19  error  Unexpected nullish value in conditional. The condition is always false                                                                                                                                  @typescript-eslint/strict-boolean-expressions
+Error:   233:48  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator                                                                                               @typescript-eslint/prefer-nullish-coalescing
+Error:   397:25  error  Unexpected nullable object value in conditional. An explicit null check is required                                                                                                                     @typescript-eslint/strict-boolean-expressions
+Error:   398:20  error  Unexpected nullable object value in conditional. An explicit null check is required                                                                                                                     @typescript-eslint/strict-boolean-expressions
+Error:   399:20  error  Unexpected nullable object value in conditional. An explicit null check is required                                                                                                                     @typescript-eslint/strict-boolean-expressions
+Error:   438:18  error  Unexpected string value in conditional. An explicit empty string check is required                                                                                                                      @typescript-eslint/strict-boolean-expressions
+Error:   502:40  error  Missing return type on function                                                                                                                                                                         @typescript-eslint/explicit-function-return-type
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/log-fetcher/log-fetcher.test.ts
+   89:14  error  Avoid referencing unbound methods which may cause unintentional scoping of `this`.
+If your function does not access `this`, you can annotate it with `this: void`, or consider using an arrow function instead  @typescript-eslint/unbound-method
+Error:   130:26  error  Unsafe call of an `any` typed value                                                                                                                                                                             @typescript-eslint/no-unsafe-call
+Error:   303:7   error  Unsafe call of an `any` typed value                                                                                                                                                                             @typescript-eslint/no-unsafe-call
+Error:   332:9   error  Unsafe call of an `any` typed value                                                                                                                                                                             @typescript-eslint/no-unsafe-call
+Error:   415:29  error  Unsafe call of an `any` typed value                                                                                                                                                                             @typescript-eslint/no-unsafe-call
+Error:   421:28  error  Unsafe call of an `any` typed value                                                                                                                                                                             @typescript-eslint/no-unsafe-call
+Error:   454:11  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                            @typescript-eslint/strict-boolean-expressions
+Error:   458:12  error  Unexpected any value in conditional. An explicit comparison or type cast is required                                                                                                                            @typescript-eslint/strict-boolean-expressions
+
+/home/runner/work/error-detection-agent/error-detection-agent/tests/log-fetcher/rate-limit-handler.test.ts
+Error:    82:7   error  Unsafe call of an `any` typed value                                                   @typescript-eslint/no-unsafe-call
+Error:   103:41  error  Missing return type on function                                                       @typescript-eslint/explicit-function-return-type
+Error:   107:13  error  Unsafe return of an `any` typed value                                                 @typescript-eslint/no-unsafe-return
+Error:   110:43  error  Unsafe argument of type `any` assigned to a parameter of type `string`                @typescript-eslint/no-unsafe-argument
+Error:   205:69  error  Async arrow function has no 'await' expression                                        @typescript-eslint/require-await
+Error:   310:21  error  Unexpected any value in conditional. An explicit comparison or type cast is required  @typescript-eslint/strict-boolean-expressions
+Error:   310:43  error  Unsafe argument of type `any` assigned to a parameter of type `string`                @typescript-eslint/no-unsafe-argument
+Error:   376:26  error  Unexpected any value in conditional. An explicit comparison or type cast is required  @typescript-eslint/strict-boolean-expressions
+Error:   377:30  error  Unsafe argument of type `any` assigned to a parameter of type `string`                @typescript-eslint/no-unsafe-argument
+
+✖ 57 problems (57 errors, 0 warnings)
+  18 errors and 0 warnings potentially fixable with the `--fix` option.
+
+# Type check errors
+
+> error-detection-agent@0.1.0 typecheck
+> tsc --noEmit
+
+Error: tests/log-fetcher/azure-authenticator.test.ts(62,13): error TS6133: '_workspaceId' is declared but its value is never read.
+Error: tests/log-fetcher/azure-authenticator.test.ts(171,13): error TS6133: '_mockLogger' is declared but its value is never read.
+Error: tests/log-fetcher/circuit-breaker.test.ts(30,13): error TS6133: '_startTime' is declared but its value is never read.
+Error: tests/log-fetcher/kql-query-builder.test.ts(346,13): error TS6133: '_query' is declared but its value is never read.
+Error: tests/log-fetcher/log-entry-parser.test.ts(163,31): error TS2339: Property 'severityLevel' does not exist on type '{ timestamp: string; message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(165,31): error TS2339: Property 'customDimensions' does not exist on type '{ timestamp: string; message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(166,36): error TS2339: Property 'operation_Name' does not exist on type '{ timestamp: string; message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(187,15): error TS6133: 'parsedEntry' is declared but its value is never read.
+Error: tests/log-fetcher/log-entry-parser.test.ts(190,21): error TS7053: Element implicitly has an 'any' type because expression of type '"severityLevel"' can't be used to index type '{ timestamp: string; message: string; }'.
+  Property 'severityLevel' does not exist on type '{ timestamp: string; message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(191,21): error TS7053: Element implicitly has an 'any' type because expression of type '"customDimensions"' can't be used to index type '{ timestamp: string; message: string; }'.
+  Property 'customDimensions' does not exist on type '{ timestamp: string; message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(208,12): error TS7053: Element implicitly has an 'any' type because expression of type '"timestamp"' can't be used to index type '{ message: string; }'.
+  Property 'timestamp' does not exist on type '{ message: string; }'.
+Error: tests/log-fetcher/log-entry-parser.test.ts(399,41): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(60,9): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(82,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(86,21): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(87,21): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(100,9): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(127,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(130,33): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(130,53): error TS7006: Parameter 'row' implicitly has an 'any' type.
+Error: tests/log-fetcher/log-fetcher.test.ts(154,13): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(167,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(173,28): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(195,66): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(205,13): error TS2322: Type '{ tables: { name: string; columns: { name: string; type: string; }[]; rows: Date[][]; }[]; status: any; partialError: any; }' is not assignable to type 'LogsQueryResult'.
+  Types of property 'tables' are incompatible.
+    Type '{ name: string; columns: { name: string; type: string; }[]; rows: Date[][]; }[]' is not assignable to type 'LogsTable[]'.
+      Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(222,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(227,21): error TS2339: Property 'partialError' does not exist on type 'LogsQueryResult'.
+  Property 'partialError' does not exist on type 'LogsQuerySuccessfulResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(228,21): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(243,15): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(258,15): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(285,13): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(299,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(306,28): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(330,66): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(362,13): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(375,62): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(392,9): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(412,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/log-fetcher.test.ts(415,36): error TS2339: Property 'tables' does not exist on type 'LogsQueryResult'.
+  Property 'tables' does not exist on type 'LogsQueryPartialResult'.
+Error: tests/log-fetcher/log-fetcher.test.ts(415,56): error TS7006: Parameter 'row' implicitly has an 'any' type.
+Error: tests/log-fetcher/log-fetcher.test.ts(421,50): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+Error: tests/log-fetcher/log-fetcher.test.ts(446,13): error TS2353: Object literal may only specify known properties, and 'columns' does not exist in type 'LogsTable'.
+Error: tests/log-fetcher/log-fetcher.test.ts(465,9): error TS2322: Type '{ hours: number; }' is not assignable to type 'string'.
+Error: tests/log-fetcher/rate-limit-handler.test.ts(240,41): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number | bigint'.
+  Type 'undefined' is not assignable to type 'number | bigint'.
+Error: tests/log-fetcher/rate-limit-handler.test.ts(309,26): error TS7053: Element implicitly has an 'any' type because expression of type '"retry-after"' can't be used to index type '{}'.
+  Property 'retry-after' does not exist on type '{}'.
+Error: tests/log-fetcher/rate-limit-handler.test.ts(376,26): error TS7053: Element implicitly has an 'any' type because expression of type '"retry-after"' can't be used to index type '{}'.
+  Property 'retry-after' does not exist on type '{}'.
+
+# Test Coverage
+
+-------------------------|---------|----------|---------|---------|---------------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s         
+-------------------------|---------|----------|---------|---------|---------------------------
+All files                |   32.68 |     27.4 |   23.96 |   32.49 |                           
+ config                  |   95.56 |    87.38 |   96.66 |   95.49 |                           
+  loader.ts              |   95.07 |    85.93 |     100 |      95 | 60,91,210,213,241,372,424 
+  schemas.ts             |   94.73 |      100 |      80 |   94.73 | 172                       
+  utils.ts               |   96.55 |    89.36 |     100 |   96.47 | 168,180,192               
+ log-fetcher             |       0 |        0 |       0 |       0 |                           
+  azure-authenticator.ts |       0 |        0 |       0 |       0 | 8-144                     
+  circuit-breaker.ts     |       0 |        0 |       0 |       0 | 8-194                     
+  classes.ts             |       0 |      100 |       0 |       0 | 33-629                    
+  interfaces.ts          |       0 |        0 |       0 |       0 | 64-377                    
+  kql-query-builder.ts   |       0 |        0 |       0 |       0 | 13-220                    
+  log-entry-parser.ts    |       0 |        0 |       0 |       0 | 48-318                    
+  log-fetcher.ts         |       0 |        0 |       0 |       0 | 8-390                     
+  rate-limit-handler.ts  |       0 |        0 |       0 |       0 | 13-300                    
+  types.ts               |       0 |        0 |       0 |       0 | 71-74                     
+-------------------------|---------|----------|---------|---------|---------------------------
+Jest: "global" coverage threshold for statements (80%) not met: 32.68%
+Jest: "global" coverage threshold for branches (80%) not met: 27.4%
+Jest: "global" coverage threshold for lines (80%) not met: 32.49%
+Jest: "global" coverage threshold for functions (80%) not met: 23.96%
+Test Suites: 10 passed, 10 total
+Tests:       231 passed, 231 total
+Snapshots:   0 total
+Time:        6.828 s
+Ran all test suites.
