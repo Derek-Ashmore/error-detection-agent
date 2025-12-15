@@ -5,13 +5,13 @@
  * from Azure Application Insights with comprehensive error handling and resilience.
  */
 
-import { LogsQueryClient, LogsQueryResultStatus } from '@azure/monitor-query';
+import { LogsQueryClient, LogsQueryResultStatus } from '@azure/monitor-query-logs';
 import type {
   LogsQueryOptions,
   LogsQueryResult,
   LogsQuerySuccessfulResult,
   QueryTimeInterval,
-} from '@azure/monitor-query';
+} from '@azure/monitor-query-logs';
 
 import { AzureAuthenticator } from './azure-authenticator';
 import { CircuitBreaker } from './circuit-breaker';

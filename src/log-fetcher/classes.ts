@@ -9,7 +9,7 @@
  */
 
 import type { TokenCredential } from '@azure/identity';
-import type { LogsQueryClient, LogsQueryResult } from '@azure/monitor-query';
+import type { LogsQueryClient, LogsQueryResult } from '@azure/monitor-query-logs';
 
 import type {
   AuthenticationResult,

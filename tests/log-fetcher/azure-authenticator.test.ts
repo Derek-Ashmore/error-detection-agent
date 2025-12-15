@@ -8,11 +8,11 @@
  */
 
 import { DefaultAzureCredential, ClientSecretCredential } from '@azure/identity';
-import { LogsQueryClient } from '@azure/monitor-query';
+import { LogsQueryClient } from '@azure/monitor-query-logs';
 
 // Mock Azure SDK modules
 jest.mock('@azure/identity');
-jest.mock('@azure/monitor-query');
+jest.mock('@azure/monitor-query-logs');
 
 describe('AzureAuthenticator', () => {
   let mockDefaultCredential: jest.Mocked<DefaultAzureCredential>;

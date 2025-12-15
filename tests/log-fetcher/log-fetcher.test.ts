@@ -15,11 +15,11 @@ import {
   LogsQuerySuccessfulResult,
   LogsQueryPartialResult,
   LogsTable,
-} from '@azure/monitor-query';
+} from '@azure/monitor-query-logs';
 
 // Mock Azure SDK
 jest.mock('@azure/identity');
-jest.mock('@azure/monitor-query');
+jest.mock('@azure/monitor-query-logs');
 
 describe('LogFetcherService', () => {
   let mockLogsQueryClient: jest.Mocked<LogsQueryClient>;
@@ -220,7 +220,6 @@ describe('LogFetcherService', () => {
         partialError: {
           code: 'PartialError',
           message: 'Query partially failed',
-          name: 'PartialError',
         },
       };
 
