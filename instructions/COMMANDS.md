@@ -180,3 +180,12 @@ npx claude-flow@alpha swarm "An integration test failure is reported in file ins
 - Any idea why the error is happening?
 - It is possible that no data is returned with the query. This is not an error.
 - Please let me know if you need additional information.
+
+> Dependency upgrade
+
+```
+npx claude-flow@alpha swarm "Dependency @azure/monitor-query has been deprecated. Please upgrade to the release 1.0.0 of @azure/monitor-query-logs. Are any other dependencies listed deprecated?" --claude
+```
+
+- Dependency @azure/monitor-query has been deprecated. Please upgrade to the release 1.0.0 of @azure/monitor-query-logs
+- Are any other dependencies listed deprecated?
